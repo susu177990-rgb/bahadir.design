@@ -5,8 +5,11 @@ import { useEffect, useRef, useState } from "react";
 export default function CustomCursor() {
     const cursorRef = useRef<HTMLDivElement>(null);
     const [hovering, setHovering] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
+
         const moveCursor = (e: MouseEvent) => {
             if (cursorRef.current) {
                 cursorRef.current.style.left = `${e.clientX}px`;
@@ -34,6 +37,8 @@ export default function CustomCursor() {
             window.removeEventListener("mouseover", handleMouseOver);
         };
     }, []);
+
+    if (!mounted) return null;
 
     return (
         <div

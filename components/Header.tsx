@@ -1,95 +1,63 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import MenuOverlay from "./MenuOverlay";
+import Link from "next/link";
 
 export default function Header() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  // Prevent body scroll when menu is open
-  useEffect(() => {
-    if (menuOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [menuOpen]);
+  const navItems = [
+    { label: "Services", href: "#services" },
+    { label: "Works", href: "#works" },
+    { label: "About", href: "#about" },
+    { label: "Contact", href: "#contact" },
+  ];
 
   return (
-    <>
-      <header
-        className="fixed top-0 left-0 right-0 z-50 w-full"
-        style={{
-          transition: "background 0.4s ease",
-          background: menuOpen
-            ? "transparent"
-            : scrolled
-              ? "rgba(10,10,10,0.8)"
-              : "transparent",
-          backdropFilter: scrolled && !menuOpen ? "blur(12px)" : "none",
-        }}
-      >
-        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-6 md:px-12">
-          <a
-            href="#hero"
-            className="text-sm font-medium tracking-widest uppercase"
-            style={{ color: "var(--text-muted)" }}
-          >
-            bahadir.design
-          </a>
+    <header className="absolute top-0 z-40 w-full mix-blend-difference">
+      <div className="mx-auto flex w-full max-w-[1400px] flex-col items-start justify-between gap-y-4 px-6 pt-8 md:flex-row md:items-center md:px-12 lg:pt-10">
 
-          {/* Circular hamburger button */}
-          <button
-            onClick={() => setMenuOpen(true)}
-            aria-label="Open menu"
+        {/* Left Side: Designation */}
+        <div className="flex w-full items-start md:w-auto">
+          <span
             style={{
-              width: 52,
-              height: 52,
-              borderRadius: "50%",
-              border: "1px solid rgba(212,208,200,0.3)",
-              background: "rgba(212,208,200,0.08)",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 5,
-              cursor: "none",
-              transition: "background 0.2s",
+              display: "block",
+              width: "fit-content",
+              maxWidth: "14ch",
+              color: "#fff", // pure white makes mix-blend-difference work correctly
+              fontWeight: 500,
+              lineHeight: 1.3,
+              fontSize: "clamp(14px, 1.2vw, 16px)",
             }}
           >
-            <span
-              style={{
-                display: "block",
-                width: 20,
-                height: 1.5,
-                background: "var(--text)",
-                borderRadius: 2,
-              }}
-            />
-            <span
-              style={{
-                display: "block",
-                width: 20,
-                height: 1.5,
-                background: "var(--text)",
-                borderRadius: 2,
-              }}
-            />
-          </button>
+            AIGC Creator & Designer
+          </span>
         </div>
-      </header>
 
-      <MenuOverlay isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
-    </>
+        {/* Right Side: Navigation */}
+        <nav className="flex w-full justify-start md:w-auto md:justify-end">
+          <ul className="m-0 flex flex-col items-start justify-start gap-y-2 font-medium text-[#fff] md:flex-row md:items-center md:gap-x-12 md:gap-y-0">
+            {navItems.map((item) => (
+              <li key={item.label} className="flex leading-normal md:leading-snug">
+                <Link
+                  href={item.href}
+                  className="group relative block h-fit cursor-none overflow-hidden font-medium select-none"
+                  style={{
+                    fontSize: "clamp(14px, 1.2vw, 16px)",
+                  }}
+                >
+                  <span className="block w-full translate-y-0 transition-transform duration-[0.4s] ease-[cubic-bezier(.51,.92,.24,1.15)] group-hover:-translate-y-full">
+                    {item.label}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className="absolute left-0 top-0 block w-full translate-y-full transition-transform duration-[0.4s] ease-[cubic-bezier(.51,.92,.24,1.15)] group-hover:translate-y-0"
+                  >
+                    {item.label}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </header>
   );
 }

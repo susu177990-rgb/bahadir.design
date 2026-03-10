@@ -9,9 +9,9 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "巴哈地尔 · AIGC 创作者",
+  title: "Bahadir · AIGC Creator",
   description:
-    "用技术把 AI 视觉生产做成流水线。AI 绘画 · 绘本 · 视频 · 工作流 · 自动化",
+    "Building AI visual production pipelines. AI Illustration · Picturebooks · Video · Workflow Automation",
   metadataBase: new URL("https://bahadir.design"),
 };
 

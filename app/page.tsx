@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import Header from "@/components/Header";
 import CustomCursor from "@/components/CustomCursor";
 import { projects } from "@/data/projects";
@@ -13,11 +14,19 @@ function useReveal() {
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+
+    // Immediately check if already in viewport (e.g. on page load)
+    const rect = el.getBoundingClientRect();
+    if (rect.top < window.innerHeight && rect.bottom > 0) {
+      setVisible(true);
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) setVisible(true);
       },
-      { threshold: 0.08, rootMargin: "0px 0px -60px 0px" }
+      { threshold: 0, rootMargin: "0px 0px -20px 0px" }
     );
     observer.observe(el);
     return () => observer.disconnect();
@@ -31,10 +40,12 @@ function Reveal({
   children,
   delay = 0,
   className = "",
+  style = {},
 }: {
   children: React.ReactNode;
   delay?: number;
   className?: string;
+  style?: React.CSSProperties;
 }) {
   const { ref, visible } = useReveal();
   return (
@@ -43,11 +54,38 @@ function Reveal({
       className={className}
       style={{
         opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(40px)",
-        transition: `opacity 0.8s ${delay}s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s ${delay}s cubic-bezier(0.22, 1, 0.36, 1)`,
+        transform: visible ? "translateY(0) scale(1)" : "translateY(50px) scale(0.98)",
+        transition: `opacity 1.2s ${delay}s cubic-bezier(0.19, 1, 0.22, 1), transform 1.2s ${delay}s cubic-bezier(0.19, 1, 0.22, 1)`,
+        willChange: "opacity, transform",
+        ...style,
       }}
     >
       {children}
+    </div>
+  );
+}
+
+// ─── Staggered Text Reveal (For Hero) ─────────────────────────────────────────
+function StaggeredText({ text, delayOffset = 0 }: { text: string; delayOffset?: number }) {
+  const { ref, visible } = useReveal();
+  const letters = text.split("");
+
+  return (
+    <div ref={ref} style={{ overflow: "hidden", display: "inline-block" }}>
+      {letters.map((char, i) => (
+        <span
+          key={i}
+          style={{
+            display: "inline-block",
+            opacity: visible ? 1 : 0,
+            transform: visible ? "translateY(0)" : "translateY(100%)",
+            transition: `opacity 0.8s ${delayOffset + i * 0.05}s cubic-bezier(0.25, 1, 0.5, 1), transform 0.8s ${delayOffset + i * 0.05}s cubic-bezier(0.25, 1, 0.5, 1)`,
+            minWidth: char === " " ? "0.3em" : "auto", // preserve spaces
+          }}
+        >
+          {char}
+        </span>
+      ))}
     </div>
   );
 }
@@ -116,87 +154,44 @@ export default function Home() {
             minHeight: "100vh",
             background: "var(--bg)",
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "flex-end",
-            padding: "0 5vw 6vh",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "0 5vw",
             position: "relative",
           }}
         >
-          {/* Gradient transition to dark at bottom */}
-          <div
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: "35%",
-              background:
-                "linear-gradient(to bottom, transparent, var(--bg-dark))",
-              pointerEvents: "none",
-            }}
-          />
+          <div style={{ position: "relative", zIndex: 1, textAlign: "center", display: "flex", flexDirection: "column", gap: "2vh" }}>
 
-          <div style={{ position: "relative", zIndex: 1 }}>
-            {/* Intro label */}
-            <p
-              style={{
-                fontSize: 13,
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
-                color: "#7a7870",
-                marginBottom: "3vh",
-                fontWeight: 500,
-              }}
-            >
-              AIGC 创作者 · 上海
-            </p>
-
-            {/* Huge name */}
             <h1
               style={{
-                fontSize: "clamp(4rem, 14vw, 14rem)",
+                fontSize: "clamp(5rem, 20vw, 24rem)",
                 fontWeight: 900,
-                lineHeight: 0.88,
-                letterSpacing: "-0.03em",
+                lineHeight: 0.85,
+                letterSpacing: "-0.04em",
                 textTransform: "uppercase",
                 color: "#1a1915",
-                marginBottom: "4vh",
+                margin: 0,
+                whiteSpace: "nowrap",
               }}
             >
-              巴哈<br />地尔
+              <StaggeredText text="BAHADIR" delayOffset={0.1} />
             </h1>
 
-            {/* Bottom row */}
-            <div
+            <h1
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-end",
+                fontSize: "clamp(4rem, 16vw, 18rem)",
+                fontWeight: 800,
+                lineHeight: 0.85,
+                letterSpacing: "0.02em",
+                color: "#1a1915",
+                margin: 0,
+                whiteSpace: "nowrap",
+                opacity: 0.9,
               }}
             >
-              <p
-                style={{
-                  maxWidth: 420,
-                  fontSize: "clamp(14px, 1.6vw, 18px)",
-                  lineHeight: 1.6,
-                  color: "#5a574e",
-                  fontWeight: 500,
-                }}
-              >
-                用技术把 AI 视觉生产做成流水线，帮助团队和产品实现规模化产出。
-              </p>
-              <span
-                style={{
-                  fontSize: "clamp(3rem, 8vw, 8rem)",
-                  fontWeight: 800,
-                  color: "#c8c4bc",
-                  lineHeight: 1,
-                  letterSpacing: "-0.04em",
-                }}
-              >
-                2026
-              </span>
-            </div>
+              <StaggeredText text="巴哈地尔" delayOffset={0.3} />
+            </h1>
+
           </div>
         </section>
 
@@ -260,90 +255,109 @@ export default function Home() {
             </div>
           </Reveal>
 
-          {/* Service items */}
-          <div style={{ display: "flex", flexDirection: "column" }}>
+          {/* Service items (Sticky Stacking Effect) */}
+          <div style={{ position: "relative" }}>
             {services.map((s, i) => (
-              <Reveal key={s.num} delay={i * 0.08}>
-                <div
-                  style={{
-                    borderTop: "1px solid rgba(212,208,200,0.1)",
-                    paddingTop: "clamp(32px, 5vh, 64px)",
-                    paddingBottom: "clamp(32px, 5vh, 64px)",
-                    display: "grid",
-                    gridTemplateColumns: "1fr 2fr",
-                    gap: "clamp(20px, 4vw, 60px)",
-                  }}
-                >
-                  {/* Number */}
+              <div
+                key={s.num}
+                style={{
+                  position: "sticky",
+                  // The cascade: each card stops slightly lower than the previous one,
+                  // creating the folded/stacked effect at the top of the viewport.
+                  top: `calc(12vh + ${i * 130}px)`,
+                  background: "var(--bg-dark)", // Solid background ensures it elegantly covers the previous scrolling card
+                  zIndex: i + 10,
+                  borderTop: "1px solid rgba(212,208,200,0.1)",
+                  paddingTop: "clamp(40px, 6vh, 80px)",
+                  paddingBottom: "15vh", // Give it extra scroll length so the sticky effect lasts
+                  minHeight: "75vh", // Ensures long satisfying scroll coverage
+                  display: "grid",
+                  gridTemplateColumns: "1fr 2fr",
+                  gap: "clamp(20px, 4vw, 60px)",
+                  boxShadow: i > 0 ? "0 -20px 40px rgba(10,10,10,0.4)" : "none", // Adds depth to the overlapping layer
+                }}
+              >
+                {/* Number */}
+                <Reveal delay={0}>
                   <div>
                     <span
                       style={{
-                        fontSize: "clamp(2rem, 5vw, 5rem)",
-                        fontWeight: 700,
+                        fontSize: "clamp(2.5rem, 6vw, 5rem)",
+                        fontWeight: 800,
                         color: "var(--text)",
                         lineHeight: 1,
+                        display: "block",
                       }}
                     >
                       ({s.num})
                     </span>
                   </div>
+                </Reveal>
 
-                  {/* Content */}
-                  <div>
+                {/* Content */}
+                <div>
+                  <Reveal delay={0.1}>
                     <h3
                       style={{
-                        fontSize: "clamp(1.5rem, 3.5vw, 3rem)",
+                        fontSize: "clamp(1.5rem, 4vw, 3.5rem)",
                         fontWeight: 700,
                         color: "var(--text)",
-                        marginBottom: "2vh",
-                        letterSpacing: "-0.02em",
+                        marginBottom: "3vh",
+                        letterSpacing: "-0.03em",
                       }}
                     >
                       {s.title}
                     </h3>
+                  </Reveal>
+
+                  <Reveal delay={0.2}>
                     <p
                       style={{
-                        fontSize: "clamp(13px, 1.3vw, 16px)",
+                        fontSize: "clamp(14px, 1.4vw, 17px)",
                         lineHeight: 1.8,
                         color: "var(--text-muted)",
-                        marginBottom: "3vh",
-                        maxWidth: 500,
+                        marginBottom: "4vh",
+                        maxWidth: 540,
                       }}
                     >
                       {s.desc}
                     </p>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        borderTop: "1px solid rgba(212,208,200,0.08)",
-                      }}
-                    >
-                      {s.tech.map(([n, t]) => (
+                  </Reveal>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      borderTop: "1px solid rgba(212,208,200,0.08)",
+                    }}
+                  >
+                    {s.tech.map(([n, t], index) => (
+                      <Reveal key={n} delay={0.3 + index * 0.1}>
                         <div
-                          key={n}
                           style={{
                             display: "flex",
                             alignItems: "center",
                             gap: 20,
-                            padding: "12px 0",
+                            padding: "16px 0",
                             borderBottom: "1px solid rgba(212,208,200,0.08)",
+                            position: "relative",
+                            overflow: "hidden"
                           }}
                         >
                           <span
                             style={{
                               fontSize: 11,
-                              fontWeight: 500,
+                              fontWeight: 600,
                               color: "var(--text-muted)",
                               fontFamily: "monospace",
-                              minWidth: 24,
+                              minWidth: 30,
                             }}
                           >
                             {n}
                           </span>
                           <span
                             style={{
-                              fontSize: "clamp(13px, 1.4vw, 17px)",
+                              fontSize: "clamp(14px, 1.5vw, 18px)",
                               fontWeight: 600,
                               color: "var(--text)",
                             }}
@@ -351,11 +365,11 @@ export default function Home() {
                             {t}
                           </span>
                         </div>
-                      ))}
-                    </div>
+                      </Reveal>
+                    ))}
                   </div>
                 </div>
-              </Reveal>
+              </div>
             ))}
           </div>
         </section>
@@ -420,39 +434,10 @@ export default function Home() {
           </Reveal>
 
           {/* Project list */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "minmax(80px, 200px) 1fr",
-              gap: 0,
-            }}
-          >
-            {/* Row of numbers */}
-            <div
-              style={{
-                fontSize: "clamp(5rem, 18vw, 22rem)",
-                fontWeight: 800,
-                lineHeight: 0.85,
-                color: "rgba(212,208,200,0.08)",
-                userSelect: "none",
-                display: "flex",
-                flexDirection: "column",
-                letterSpacing: "-0.04em",
-              }}
-            >
-              {projects.slice(0, 6).map((_, i) => (
-                <span key={i} style={{ lineHeight: 1 }}>
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-              ))}
-            </div>
-
-            {/* Project cards */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-              {projects.map((project, i) => (
-                <ProjectItem key={project.slug} project={project} index={i} />
-              ))}
-            </div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            {projects.map((project, i) => (
+              <ProjectItem key={project.slug} project={project} index={i} />
+            ))}
           </div>
         </section>
 
@@ -744,51 +729,139 @@ export default function Home() {
   );
 }
 
-// ─── Project Item ─────────────────────────────────────────────────────────────
+// ─── Project Item (Scroll Flow Interaction) ────────────────────────────────────
 function ProjectItem({
   project,
   index,
 }: {
-  project: { slug: string; title: string; shortName?: string; tagline: string; category: string; thumbnail: string };
+  project: { slug: string; title: string; shortName?: string; tagline: string; category: string; thumbnail: string; background?: string; role?: string; approach?: string; result?: string; };
   index: number;
 }) {
   const { ref, visible } = useReveal();
-  const [hovered, setHovered] = useState(false);
+  const titleRef = useRef<HTMLDivElement>(null);
+  const [isActive, setIsActive] = useState(false);
+
+  useEffect(() => {
+    const el = titleRef.current;
+    if (!el) return;
+    const handleScroll = () => {
+      const rect = el.getBoundingClientRect();
+      const windowCenter = window.innerHeight / 2;
+      const elCenter = rect.top + rect.height / 2;
+      // Trigger the "active" animation state when the title is near the viewport center
+      const distance = Math.abs(elCenter - windowCenter);
+      setIsActive(distance < 300);
+    };
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    // Safety check after initial renders just in case of layout shifts
+    const timeoutId = setTimeout(handleScroll, 100);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      clearTimeout(timeoutId);
+    };
+  }, []);
 
   return (
     <div
       ref={ref}
       style={{
         opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(40px)",
-        transition: `opacity 0.8s ${index * 0.06}s cubic-bezier(0.22, 1, 0.36, 1), transform 0.8s ${index * 0.06}s cubic-bezier(0.22, 1, 0.36, 1)`,
+        transform: visible ? "translateY(0)" : "translateY(24px)",
+        transition: `opacity 0.7s ${Math.min(index * 0.05, 0.25)}s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s ${Math.min(index * 0.05, 0.25)}s cubic-bezier(0.22, 1, 0.36, 1)`,
+        borderBottom: "1px solid rgba(212,208,200,0.1)",
+        paddingBottom: "8vh",
       }}
     >
-      <a
-        href="#"
-        className="cursor-hover"
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
+      {/* Title Bar (Scroll to preview) */}
+      <div
+        ref={titleRef}
+        className="block relative w-full overflow-hidden"
         style={{
-          display: "block",
-          textDecoration: "none",
-          paddingTop: "clamp(24px, 4vh, 40px)",
-          paddingBottom: "clamp(24px, 4vh, 40px)",
-          borderBottom: "1px solid rgba(212,208,200,0.08)",
-          cursor: "none",
+          padding: "clamp(24px, 4vh, 40px) 0",
         }}
       >
-        {/* Image */}
         <div
           style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
             position: "relative",
+            zIndex: 2,
+          }}
+        >
+          {/* Project Title (Massive Text) */}
+          <h3
+            style={{
+              fontSize: "clamp(2.5rem, 6vw, 7rem)",
+              fontWeight: 800,
+              color: "var(--text)",
+              margin: 0,
+              lineHeight: 1,
+              letterSpacing: "-0.04em",
+              textTransform: "uppercase",
+              transition: "transform 0.6s cubic-bezier(0.19, 1, 0.22, 1), color 0.6s",
+              transform: isActive ? "translateX(2vw)" : "translateX(0)",
+            }}
+          >
+            {project.shortName || project.title}
+          </h3>
+
+          {/* Project Category / Tagline */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "2vw",
+              textAlign: "right",
+              transition: "transform 0.6s cubic-bezier(0.19, 1, 0.22, 1), opacity 0.6s",
+              transform: isActive ? "translateX(-2vw)" : "translateX(0)",
+              opacity: isActive ? 1 : 0.4,
+            }}
+          >
+            <div>
+              <p
+                style={{
+                  fontSize: "clamp(12px, 1.2vw, 15px)",
+                  fontWeight: 600,
+                  color: "var(--text)",
+                  letterSpacing: "0.05em",
+                  textTransform: "uppercase",
+                  fontFamily: "monospace",
+                  marginBottom: 8,
+                }}
+              >
+                {project.category}
+              </p>
+              <p
+                style={{
+                  fontSize: "clamp(14px, 1.4vw, 18px)",
+                  fontWeight: 500,
+                  color: "var(--text-muted)",
+                }}
+              >
+                {project.tagline}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Action Image Reveal Parallax (Awwwards Style) */}
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            width: "clamp(300px, 30vw, 500px)",
+            aspectRatio: "16/9",
+            transform: `translate(-50%, -50%) scale(${isActive ? 1 : 0.8}) rotate(${isActive ? "-2deg" : "0deg"})`,
+            opacity: isActive ? 1 : 0,
+            transition: "all 0.8s cubic-bezier(0.19, 1, 0.22, 1)",
+            pointerEvents: "none",
+            zIndex: 1,
             borderRadius: 12,
             overflow: "hidden",
-            marginBottom: 16,
-            aspectRatio: "16/9",
-            background: "#1a1915",
-            transform: hovered ? "scale(1.02)" : "scale(1)",
-            transition: "transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)",
+            boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
           }}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -799,109 +872,83 @@ function ProjectItem({
               width: "100%",
               height: "100%",
               objectFit: "cover",
-              transform: hovered ? "scale(1.05)" : "scale(1)",
-              transition: "transform 0.5s cubic-bezier(0.22, 1, 0.36, 1)",
+              transform: isActive ? "scale(1.05)" : "scale(1.2)",
+              transition: "transform 0.8s cubic-bezier(0.19, 1, 0.22, 1)",
             }}
           />
+        </div>
+      </div>
 
-          {/* Hover VIEW badge */}
+      {/* Content Payload (Always inline, automatically revealed on scroll) */}
+      <div style={{ display: "flex", flexDirection: "column", gap: "6vh", marginTop: "2vh" }}>
+        {/* Big Thumbnail */}
+        <Reveal delay={0.1}>
           <div
             style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "rgba(10,10,10,0.4)",
-              opacity: hovered ? 1 : 0,
-              transition: "opacity 0.3s ease",
+              width: "100%",
+              aspectRatio: "21/9",
+              background: "#1a1915",
+              borderRadius: 16,
+              overflow: "hidden",
             }}
           >
-            <span
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={project.thumbnail}
+              alt={project.title}
               style={{
-                width: 80,
-                height: 80,
-                borderRadius: "50%",
-                background: "var(--bg)",
-                color: "#1a1915",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 12,
-                fontWeight: 700,
-                letterSpacing: "0.1em",
-                textTransform: "uppercase",
-                transform: hovered ? "scale(1)" : "scale(0.5)",
-                transition: "transform 0.3s cubic-bezier(0.22, 1, 0.36, 1)",
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
               }}
-            >
-              查看
-            </span>
+            />
           </div>
-        </div>
+        </Reveal>
 
-        {/* Meta */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-end",
-          }}
-        >
-          <div>
-            <p
-              style={{
-                fontSize: 11,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                color: "var(--text-muted)",
-                marginBottom: 6,
-                fontFamily: "monospace",
-              }}
-            >
-              {project.tagline}
-            </p>
-            <h3
-              style={{
-                fontSize: "clamp(1.2rem, 2.5vw, 2rem)",
-                fontWeight: 700,
-                color: "var(--text)",
-                letterSpacing: "-0.01em",
-                transition: "color 0.2s",
-              }}
-            >
-              {project.shortName || project.title}
-            </h3>
+        {/* Details Grid */}
+        <Reveal delay={0.2}>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+              gap: "clamp(30px, 5vw, 60px)",
+            }}
+          >
+            {[
+              { label: "Background", value: project.background },
+              { label: "Role", value: project.role },
+              { label: "Approach", value: project.approach },
+              { label: "Result", value: project.result },
+            ].map((item, i) => item.value ? (
+              <div key={i} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <span
+                  style={{
+                    fontSize: 12,
+                    fontWeight: 600,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.15em",
+                    color: "var(--text-muted)",
+                    borderBottom: "1px solid rgba(212,208,200,0.1)",
+                    paddingBottom: 12,
+                    fontFamily: "monospace",
+                  }}
+                >
+                  {item.label}
+                </span>
+                <p
+                  style={{
+                    fontSize: "clamp(14px, 1.2vw, 16px)",
+                    lineHeight: 1.8,
+                    color: "var(--text)",
+                  }}
+                >
+                  {item.value}
+                </p>
+              </div>
+            ) : null)}
           </div>
-          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-            <span
-              style={{
-                padding: "5px 12px",
-                border: "1px solid rgba(212,208,200,0.2)",
-                borderRadius: 20,
-                fontSize: 11,
-                color: "var(--text-muted)",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-              }}
-            >
-              {project.category}
-            </span>
-            <span
-              style={{
-                padding: "5px 12px",
-                border: "1px solid rgba(212,208,200,0.08)",
-                borderRadius: 20,
-                fontSize: 11,
-                color: "var(--text-muted)",
-                background: "rgba(212,208,200,0.04)",
-              }}
-            >
-              2025
-            </span>
-          </div>
-        </div>
-      </a>
+        </Reveal>
+      </div>
     </div>
   );
 }
