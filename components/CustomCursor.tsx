@@ -8,7 +8,7 @@ export default function CustomCursor() {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-        setMounted(true);
+        queueMicrotask(() => setMounted(true));
 
         const moveCursor = (e: MouseEvent) => {
             if (cursorRef.current) {

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
+import { DM_Sans, Noto_Sans_SC } from "next/font/google";
 import "./globals.css";
 
 const dmSans = DM_Sans({
@@ -8,10 +8,16 @@ const dmSans = DM_Sans({
   weight: ["400", "500", "600", "700", "800", "900"],
 });
 
+const notoSansSC = Noto_Sans_SC({
+  variable: "--font-noto-sans-sc",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+});
+
 export const metadata: Metadata = {
-  title: "Bahadir · AIGC Creator",
+  title: "巴哈地尔 · AIGC 创作者",
   description:
-    "Building AI visual production pipelines. AI Illustration · Picturebooks · Video · Workflow Automation",
+    "构建 AI 视觉生产流水线。AI 绘本 · 工具开发 · 视频 · 工作流自动化",
   metadataBase: new URL("https://bahadir.design"),
 };
 
@@ -22,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN">
-      <body className={`${dmSans.variable} antialiased`}>{children}</body>
+      <body className={`${dmSans.variable} ${notoSansSC.variable} antialiased bg-[#e8e6e1]`}>{children}</body>
     </html>
   );
 }
