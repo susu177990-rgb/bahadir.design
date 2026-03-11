@@ -216,7 +216,7 @@ const skillColumns = [
   },
   {
     label: "核心方法论",
-    items: ["提示词工程", "角色一致性", "SOP 构建", "工作流自动化", "IP 孵化", "知识产品化"],
+    items: ["JSON 逆向工程", "Vibe Coding", "视觉管线自动化", "一致性控制", "数字资产沉淀", "工作流拆解"],
   },
 ];
 
@@ -278,7 +278,7 @@ export default function Home() {
                   textAlign: "left",
                   minWidth: 0
                 }}>
-                  AI 绘本 · 工具开发 · 视频
+                  AI 视觉生产 · 全栈开发 · 工作流自动化
                 </span>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr", justifyItems: "start", gap: "0.4em", lineHeight: 0.88, margin: 0, padding: 0, minWidth: 0 }}>
@@ -342,7 +342,7 @@ export default function Home() {
                       maxWidth: "380px",
                       marginTop: "0.5vh"
                     }}>
-                      用技术构建 AI 视觉生产流水线，把零散创作转化为可复用的系统。承接全球项目合作。
+                      我将分散的生成式 AI 转化为标准化的工业级管线。从自动化工具开发到视觉资产量产，交付可复用、可扩展的系统。承接全球商业项目与技术咨询。
                     </p>
                     <button
                       type="button"
