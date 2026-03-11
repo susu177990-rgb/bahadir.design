@@ -177,7 +177,7 @@ const servicesData = [
     title: "AI 绘本与视觉",
     desc: "从角色设定到多页场景连贯性，用提示词工程将非标准化创作转化为标准化流水线。在不降质的前提下，将团队绘本产出效率提升 20 倍。",
     tech: [
-      ["01", "ComfyUI · MJ · 角色一致性"],
+      ["01", "SD · ComfyUI · MJ · Nano Banana · 角色/场景一致性"],
       ["02", "JSON 提示词逆向工程"],
       ["03", "Vibe Coding · 批量生成"],
     ],
@@ -195,9 +195,9 @@ const servicesData = [
   {
     num: "03",
     title: "AI 视频",
-    desc: "MV 制作、商业比赛、平台打榜。熟悉 Sora、Runway、Pika 等工具，产出可商用的 AI 视频内容，具备高要求 B 端交付能力。",
+    desc: "MV 制作、商业比赛、平台打榜。熟悉 See dance · Sora · Veo 等工具，产出可商用的 AI 视频内容，具备高要求 B 端交付能力。",
     tech: [
-      ["01", "Sora · Runway · Pika"],
+      ["01", "See dance · Sora · Veo"],
       ["02", "商业 MV · 品牌视频"],
       ["03", "平台打榜 · 参赛作品"],
     ],
@@ -208,7 +208,7 @@ const servicesData = [
 const skillColumns = [
   {
     label: "AIGC 工具",
-    items: ["ComfyUI", "MidJourney", "Stable Diffusion", "Sora", "Runway", "Pika", "Kling"],
+    items: ["ComfyUI", "MidJourney", "Stable Diffusion", "See dance", "Sora", "Veo", "Kling"],
   },
   {
     label: "开发能力",
@@ -219,6 +219,43 @@ const skillColumns = [
     items: ["JSON 逆向工程", "Vibe Coding", "视觉管线自动化", "一致性控制", "数字资产沉淀", "工作流拆解"],
   },
 ];
+
+const renderTextWithLinks = (text: string) => {
+  const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = linkRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index));
+    }
+    parts.push(
+      <a
+        key={match.index}
+        href={match[2]}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          color: "var(--text)",
+          textDecoration: "underline",
+          textUnderlineOffset: 4,
+          transition: "opacity 0.2s"
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.7")}
+        onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+      >
+        {match[1]} ↗
+      </a>
+    );
+    lastIndex = linkRegex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+  return parts.length > 0 ? parts : text;
+};
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 export default function Home() {
@@ -559,8 +596,8 @@ export default function Home() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "clamp(40px, 6vw, 100px)",
+              gridTemplateColumns: "1.1fr 0.9fr",
+              gap: "clamp(40px, 8vw, 140px)",
               alignItems: "start",
             }}
           >
@@ -569,42 +606,41 @@ export default function Home() {
               <div>
                 <h2
                   style={{
-                    fontSize: "clamp(3rem, 7vw, 8rem)",
+                    fontSize: "clamp(2.5rem, 6vw, 7rem)",
                     fontWeight: 900,
                     textTransform: "uppercase",
                     lineHeight: 1.1,
                     color: "var(--text)",
-                    letterSpacing: "-0.03em",
+                    letterSpacing: "-0.04em",
                     marginBottom: "4vh",
                   }}
                 >
-                  AIGC<br />
-                  创作者<br />
-                  设计师 /
+                  AI 视觉工程专家 /<br />
+                  全栈开发者 /
                 </h2>
                 <p
                   style={{
-                    fontSize: "clamp(14px, 1.5vw, 18px)",
-                    lineHeight: 1.8,
-                    color: "var(--text-muted)",
-                    fontWeight: 500,
-                    maxWidth: 440,
-                    marginBottom: "3.5vh",
+                    fontSize: "clamp(15px, 1.4vw, 20px)",
+                    lineHeight: 1.6,
+                    color: "var(--text)",
+                    fontWeight: 600,
+                    maxWidth: 500,
+                    marginBottom: "3vh",
                   }}
                 >
-                  我是巴哈地尔，做 AI 视觉，也搭系统。用技术把零散、非标的创作流程，整理成可复用的流水线。
+                  我将分散的生成式 AI 转化为标准化的工业级管线。已主导交付 30+ 商业化 AI 绘本，实现视觉管线 20 倍效能跨越。
                 </p>
                 <p
                   style={{
-                    fontSize: "clamp(14px, 1.5vw, 18px)",
+                    fontSize: "clamp(14px, 1.2vw, 17px)",
                     lineHeight: 1.8,
                     color: "var(--text-muted)",
                     fontWeight: 500,
-                    maxWidth: 440,
-                    marginBottom: "4vh",
+                    maxWidth: 460,
+                    marginBottom: "5vh",
                   }}
                 >
-                  做这行久了，会对一些细节有执念——角色一致性要控到什么程度、提示词结构怎么拆才方便复用。把事做好，把流程跑通，这是我在意的。
+                  人物与场景的一致性是我的交付底线。从 SaaS 平台的一键式架构到大规模数字资产沉淀，我不仅在“使用” AI，更在用系统思维定义 AIGC 的生产标准。
                 </p>
                 <a
                   href="/resume.pdf"
@@ -976,9 +1012,36 @@ function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
                     letterSpacing: "-0.04em",
                     textTransform: "uppercase",
                     marginBottom: "3vh",
+                    whiteSpace: "pre-line",
                   }}
                 >
-                  {p.title}
+                  {p.title === "otato.cn\notato.art" ? (
+                    <>
+                      <a 
+                        href="https://otato.cn" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        style={{ color: "inherit", textDecoration: "underline", textUnderlineOffset: 8, transition: "opacity 0.2s" }}
+                        onMouseEnter={(e) => e.currentTarget.style.opacity = "0.7"}
+                        onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
+                      >
+                        otato.cn ↗
+                      </a>
+                      {"\n"}
+                      <a 
+                        href="https://otato.art" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        style={{ color: "inherit", textDecoration: "underline", textUnderlineOffset: 8, transition: "opacity 0.2s" }}
+                        onMouseEnter={(e) => e.currentTarget.style.opacity = "0.7"}
+                        onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
+                      >
+                        otato.art ↗
+                      </a>
+                    </>
+                  ) : (
+                    p.title
+                  )}
                 </h3>
 
                 {/* Tagline / Descriptive Hero Text */}
@@ -1001,16 +1064,14 @@ function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    gridTemplateColumns: "1fr",
                     gap: "2.5vw",
                     rowGap: "4vh",
                   }}
                 >
                   {[
-                    { label: "背景", value: p.background },
-                    { label: "角色", value: p.role },
-                    { label: "方法", value: p.approach },
-                    { label: "成果", value: p.result },
+                    { label: "项目内容", value: p.background },
+                    { label: "负责部分", value: p.role },
                   ].map((item, idx) =>
                     item.value ? (
                       <div key={idx} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -1033,9 +1094,10 @@ function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
                             fontSize: "clamp(13px, 1vw, 15px)",
                             lineHeight: 1.7,
                             color: "rgba(212,208,200,0.7)",
+                            whiteSpace: "pre-line",
                           }}
                         >
-                          {item.value}
+                          {renderTextWithLinks(item.value)}
                         </p>
                       </div>
                     ) : null
@@ -1048,7 +1110,17 @@ function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
       </div>
 
       {/* RIGHT: Scrolling Media */}
-      <div className="flex flex-col w-full" style={{ gap: "30vh", paddingBottom: "20vh" }}>
+      <div 
+        className="flex flex-col w-full" 
+        style={{ 
+          gap: 0, 
+          marginBottom: "20vh",
+          background: "#1a1915",
+          borderRadius: 16,
+          overflow: "hidden",
+          boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
+        }}
+      >
         {projects.map((p, i) => (
           <div
             key={p.slug}
@@ -1058,27 +1130,43 @@ function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
                position: "relative",
             }}
           >
-            {/* Media Container */}
             <div
               style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 0,
                 width: "100%",
-                aspectRatio: "3/4", // Portrait poster look for artistic vibe
-                background: "#1a1915",
-                borderRadius: 16,
-                overflow: "hidden",
-                boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
               }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element -- placeholder/remote URLs */}
-              <img
-                src={p.thumbnail}
-                alt={p.title}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                }}
-              />
+              {(p.videos || p.images || [p.thumbnail]).map((mediaSrc: string, mediaIdx: number) => (
+                <div key={mediaIdx} style={{ width: "100%", position: "relative" }}>
+                  {mediaSrc.endsWith('.mp4') || mediaSrc.endsWith('.webm') ? (
+                    <video
+                      src={mediaSrc}
+                      autoPlay
+                      loop
+                      muted
+                      playsInline
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        display: "block",
+                      }}
+                    />
+                  ) : (
+                    /* eslint-disable-next-line @next/next/no-img-element -- remote URLs */
+                    <img
+                      src={mediaSrc}
+                      alt={`${p.title} part ${mediaIdx + 1}`}
+                      style={{
+                        width: "100%",
+                        height: "auto",
+                        display: "block",
+                      }}
+                    />
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         ))}
