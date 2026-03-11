@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Header from "@/components/Header";
 import CustomCursor from "@/components/CustomCursor";
 import { projects, type Project } from "@/data/projects";
+import Image from "next/image";
 
 // ─── Scroll Reveal Hook ───────────────────────────────────────────────────────
 function useReveal() {
@@ -256,6 +257,56 @@ const renderTextWithLinks = (text: string) => {
   }
   return parts.length > 0 ? parts : text;
 };
+
+// ─── Lazy Video Component ───────────────────────────────────────────────────
+function LazyVideo({ src, alt }: { src: string; alt: string }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          video.play().catch(() => {}); // Handle potential autoplay blocks
+        } else {
+          video.pause();
+        }
+      },
+      { threshold: 0.1 } // Play when at least 10% visible
+    );
+
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <video
+      ref={videoRef}
+      src={src}
+      loop
+      muted
+      playsInline
+      preload="metadata"
+      onMouseEnter={(e) => {
+        e.currentTarget.muted = false;
+        e.currentTarget.volume = 0.7; // Medium volume
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.muted = true;
+      }}
+      style={{
+        width: "100%",
+        height: "auto",
+        display: "block",
+        backgroundColor: "#111", // Placeholder color 
+        cursor: "pointer",
+      }}
+      aria-label={alt}
+    />
+  );
+}
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 export default function Home() {
@@ -1139,30 +1190,26 @@ function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
               }}
             >
               {(p.videos || p.images || [p.thumbnail]).map((mediaSrc: string, mediaIdx: number) => (
-                <div key={mediaIdx} style={{ width: "100%", position: "relative" }}>
-                  {mediaSrc.endsWith('.mp4') || mediaSrc.endsWith('.webm') ? (
-                    <video
-                      src={mediaSrc}
-                      autoPlay
-                      loop
-                      muted
-                      playsInline
-                      style={{
-                        width: "100%",
-                        height: "auto",
-                        display: "block",
-                      }}
+                <div key={mediaIdx} style={{ width: "100%", position: "relative", overflow: "hidden" }}>
+                  {mediaSrc.endsWith('.mp4') || mediaSrc.endsWith('.MP4') || mediaSrc.endsWith('.webm') ? (
+                    <LazyVideo 
+                      src={mediaSrc} 
+                      alt={`${p.title} video part ${mediaIdx + 1}`} 
                     />
                   ) : (
-                    /* eslint-disable-next-line @next/next/no-img-element -- remote URLs */
-                    <img
+                    <Image
                       src={mediaSrc}
                       alt={`${p.title} part ${mediaIdx + 1}`}
+                      width={1200} // High quality threshold
+                      height={800} // Dynamic height usually, handled by layout
                       style={{
                         width: "100%",
                         height: "auto",
                         display: "block",
                       }}
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                      quality={85}
+                      priority={p.featured && mediaIdx === 0} // Only priority for featured project thumbnails
                     />
                   )}
                 </div>
