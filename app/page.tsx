@@ -261,6 +261,7 @@ const renderTextWithLinks = (text: string) => {
 // ─── Lazy Video Component ───────────────────────────────────────────────────
 function LazyVideo({ src, alt }: { src: string; alt: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -272,9 +273,11 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
           video.play().catch(() => {}); // Handle potential autoplay blocks
         } else {
           video.pause();
+          // Re-mute when scrolled away
+          setIsMuted(true);
         }
       },
-      { threshold: 0.1 } // Play when at least 10% visible
+      { threshold: 0.1 }
     );
 
     observer.observe(video);
@@ -286,21 +289,16 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
       ref={videoRef}
       src={src}
       loop
-      muted
+      muted={isMuted}
       playsInline
       preload="metadata"
-      onMouseEnter={(e) => {
-        e.currentTarget.muted = false;
-        e.currentTarget.volume = 0.7; // Medium volume
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.muted = true;
-      }}
+      onMouseEnter={() => setIsMuted(false)}
+      onMouseLeave={() => setIsMuted(true)}
       style={{
         width: "100%",
         height: "auto",
         display: "block",
-        backgroundColor: "#111", // Placeholder color 
+        backgroundColor: "#111",
         cursor: "pointer",
       }}
       aria-label={alt}
@@ -366,7 +364,7 @@ export default function Home() {
                   textAlign: "left",
                   minWidth: 0
                 }}>
-                  AI 视觉生产 · 全栈开发 · 工作流自动化
+                   AI 视觉工程 · 全栈开发 · 工作流自动化
                 </span>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr", justifyItems: "start", gap: "0.4em", lineHeight: 0.88, margin: 0, padding: 0, minWidth: 0 }}>
@@ -827,10 +825,23 @@ export default function Home() {
                   alignSelf: "center",
                 }}
               >
-                <form style={{ display: "flex", flexDirection: "column", gap: "2.5vh" }}>
+                <form 
+                  style={{ display: "flex", flexDirection: "column", gap: "2.5vh" }}
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const form = e.currentTarget;
+                    const name = (form.elements.namedItem("name") as HTMLInputElement)?.value || "";
+                    const email = (form.elements.namedItem("email") as HTMLInputElement)?.value || "";
+                    const message = (form.elements.namedItem("message") as HTMLTextAreaElement)?.value || "";
+                    const subject = encodeURIComponent(`来自 ${name} 的消息`);
+                    const body = encodeURIComponent(`姓名：${name}\n邮符1：${email}\n\n${message}`);
+                    window.location.href = `mailto:griffith_huo@outlook.com?subject=${subject}&body=${body}`;
+                  }}
+                >
                   <div style={{ display: "flex", gap: "3vw", flexDirection: "row", flexWrap: "wrap" }}>
                     <input
                       type="text"
+                      name="name"
                       placeholder="你的名字？"
                       style={{
                         flex: "1 1 300px",
@@ -851,6 +862,7 @@ export default function Home() {
                     />
                     <input
                       type="email"
+                      name="email"
                       placeholder="你的邮箱？"
                       style={{
                         flex: "1 1 300px",
@@ -871,6 +883,7 @@ export default function Home() {
                     />
                   </div>
                   <textarea
+                    name="message"
                     placeholder="说说你的项目想法..."
                     rows={1}
                     style={{
@@ -892,7 +905,7 @@ export default function Home() {
                     onBlur={(e) => (e.target.style.borderBottomColor = "rgba(0,0,0,0.1)")}
                   />
                   <button
-                    type="button"
+                    type="submit"
                     style={{
                       marginTop: "3vh",
                       alignSelf: "center",
@@ -942,10 +955,20 @@ export default function Home() {
             </div>
             <div>
               <h4 style={{ fontSize: "13px", fontWeight: 700, margin: 0, color: "var(--bg-dark)", marginBottom: 12 }}>社交</h4>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {["Dribbble", "Instagram", "Twitter"].map(item => (
-                  <a key={item} href="#" className="footer-link" style={{ color: "var(--bg-dark)", opacity: 0.6, fontSize: 13, textDecoration: "none" }}>{item}</a>
-                ))}
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText("SKYRE614");
+                    const el = document.getElementById("wechat-copy-tip");
+                    if (el) { el.style.opacity = "1"; setTimeout(() => { el.style.opacity = "0"; }, 1500); }
+                  }}
+                  style={{ background: "none", border: "none", padding: 0, cursor: "pointer", textAlign: "left", color: "var(--bg-dark)", opacity: 0.6, fontSize: 13, display: "flex", alignItems: "center", gap: 6, fontFamily: "inherit", textDecoration: "underline", textUnderlineOffset: 3 }}
+                >
+                  微信
+                  <span id="wechat-copy-tip" style={{ fontSize: 11, opacity: 0, transition: "opacity 0.3s", color: "#1a1915", fontStyle: "italic", textDecoration: "none" }}>✓ 已复制!</span>
+                </button>
+                <a href="https://v.douyin.com/582fXEnE_Ew/" target="_blank" rel="noopener noreferrer" className="footer-link" style={{ color: "var(--bg-dark)", opacity: 0.6, fontSize: 13, textDecoration: "none" }}>抖音 ↗</a>
+                <a href="https://xhslink.com/m/7fpkuw5vgYe" target="_blank" rel="noopener noreferrer" className="footer-link" style={{ color: "var(--bg-dark)", opacity: 0.6, fontSize: 13, textDecoration: "none" }}>小红书 ↗</a>
               </div>
             </div>
           </div>
@@ -953,6 +976,9 @@ export default function Home() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", borderTop: "1px solid rgba(0,0,0,0.1)", paddingTop: 24 }}>
             <span style={{ fontSize: 11, color: "var(--bg-dark)", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em" }}>
               BAHADIR <span style={{ opacity: 0.4 }}>© 2026</span>
+            </span>
+            <span style={{ fontSize: 10, color: "var(--bg-dark)", opacity: 0.4, textAlign: "right", letterSpacing: "0.03em" }}>
+              新ICP备2024016754号-3
             </span>
           </div>
         </footer>
@@ -970,8 +996,17 @@ export default function Home() {
 // ─── Selected Works (Split View Timeline) ──────────────────────────────────────
 function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
+    if (isMobile) return; // On mobile, no observer needed
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -989,8 +1024,80 @@ function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
     elements.forEach((el) => observer.observe(el));
 
     return () => observer.disconnect();
-  }, []);
+  }, [isMobile]);
 
+  // ── Mobile: stacked vertical layout ──────────────────────────────────────
+  if (isMobile) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "12vh", marginTop: "6vh", width: "100%" }}>
+        {projects.map((p, i) => (
+          <div key={p.slug} style={{ display: "flex", flexDirection: "column", gap: "4vh" }}>
+            {/* Text panel */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "3vh" }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: "4vw", marginBottom: "2vh" }}>
+                <span style={{ fontSize: "clamp(4rem, 18vw, 8rem)", fontWeight: 800, lineHeight: 0.75, color: "var(--text)", letterSpacing: "-0.05em" }}>
+                  0{i + 1}
+                </span>
+                <div style={{ paddingTop: "1vh", display: "flex", flexDirection: "column", gap: "1vh" }}>
+                  <span style={{ padding: "6px 14px", borderRadius: "50px", border: "1px solid rgba(212,208,200,0.15)", fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase" as const, color: "var(--text)", fontFamily: "monospace" }}>
+                    {p.category}
+                  </span>
+                </div>
+              </div>
+              <h3 style={{ fontSize: "clamp(1.8rem, 8vw, 3.5rem)", fontWeight: 900, color: "var(--text)", margin: 0, lineHeight: 1.0, letterSpacing: "-0.04em", textTransform: "uppercase" as const, whiteSpace: "pre-line" }}>
+                {p.title === "otato.cn\notato.art" ? (
+                  <>
+                    <a href="https://otato.cn" target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "underline", textUnderlineOffset: 8 }}>otato.cn ↗</a>
+                    {"\n"}
+                    <a href="https://otato.art" target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "underline", textUnderlineOffset: 8 }}>otato.art ↗</a>
+                  </>
+                ) : p.title}
+              </h3>
+              <p style={{ fontSize: "clamp(13px, 3.5vw, 16px)", color: "rgba(212,208,200,0.6)", fontStyle: "italic", margin: 0 }}>{p.tagline}</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "4vh" }}>
+                {[
+                  { label: "项目内容", value: p.background },
+                  { label: "负责部分", value: p.role },
+                ].map((item, idx) =>
+                  item.value ? (
+                    <div key={idx} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.15em", color: "var(--text-muted)", borderBottom: "1px solid rgba(212,208,200,0.1)", paddingBottom: 8, marginBottom: 4 }}>{item.label}</span>
+                      <p style={{ fontSize: "clamp(13px, 3.5vw, 15px)", lineHeight: 1.7, color: "rgba(212,208,200,0.7)", whiteSpace: "pre-line" }}>
+                        {renderTextWithLinks(item.value)}
+                      </p>
+                    </div>
+                  ) : null
+                )}
+              </div>
+            </div>
+            {/* Media panel */}
+            <div style={{ width: "100%", borderRadius: 12, overflow: "hidden", background: "#1a1915" }}>
+              {(p.videos || p.images || [p.thumbnail]).map((mediaSrc: string, mediaIdx: number) => (
+                <div key={mediaIdx} style={{ width: "100%", position: "relative", overflow: "hidden" }}>
+                  {mediaSrc.endsWith('.mp4') || mediaSrc.endsWith('.MP4') || mediaSrc.endsWith('.webm') ? (
+                    <LazyVideo src={mediaSrc} alt={`${p.title} video part ${mediaIdx + 1}`} />
+                  ) : (
+                    <Image
+                      src={mediaSrc}
+                      alt={`${p.title} part ${mediaIdx + 1}`}
+                      width={1200}
+                      height={800}
+                      style={{ width: "100%", height: "auto", display: "block" }}
+                      sizes="100vw"
+                      quality={80}
+                      priority={i === 0 && mediaIdx === 0}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // ── Desktop: sticky overlay layout ───────────────────────────────────────
   return (
     <div className="flex flex-col md:grid md:grid-cols-[1fr_1.2fr] gap-y-12 gap-x-[6vw] items-start relative mt-12 w-full">
       {/* LEFT: Sticky Active Content */}
@@ -1016,6 +1123,7 @@ function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
                 gap: "3vh",
               }}
             >
+
               <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column" }}>
                 {/* Upper block: Giant Number + Category */}
                 <div style={{ display: "flex", alignItems: "flex-start", gap: "1.5vw", marginBottom: "4vh" }}>

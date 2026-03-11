@@ -99,3 +99,93 @@ body {
 .footer-link:hover {
   opacity: 1 !important;
 }
+
+/* ─── Mobile Responsive ─────────────────────────────────────────────────────── */
+
+/* On mobile, hide the custom cursor */
+@media (max-width: 768px) {
+  html {
+    cursor: auto;
+  }
+  .cursor {
+    display: none;
+  }
+}
+
+/* Hero: tighter padding and smaller subtitle on mobile */
+@media (max-width: 768px) {
+  #hero {
+    padding: 10vh 5vw 4vh !important;
+  }
+}
+
+/* Services cards: switch to single column on mobile */
+@media (max-width: 768px) {
+  #services > div[style*="gridTemplateColumns"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Selected Works: stack vertically on mobile */
+@media (max-width: 768px) {
+  /* Left panel: stop being sticky, show normally */
+  .md\:sticky  {
+    position: relative !important;
+    top: auto !important;
+    min-height: unset !important;
+  }
+  /* Each project description panel on mobile */
+  #works .flex.flex-col {
+    gap: 3vh !important;
+  }
+}
+
+/* About section: single column on mobile */
+@media (max-width: 768px) {
+  #about > div {
+    grid-template-columns: 1fr !important;
+    gap: 6vh !important;
+  }
+  /* Skills grid: single column on mobile */
+  #about [style*="repeat(3, 1fr)"] {
+    grid-template-columns: 1fr !important;
+    gap: 4vh !important;
+  }
+}
+
+/* Contact/footer: single column footer grid on mobile */
+@media (max-width: 768px) {
+  #contact {
+    padding: 12vh 5vw 6vh !important;
+  }
+  footer > div:first-child {
+    grid-template-columns: 1fr !important;
+    gap: 5vh !important;
+  }
+  /* Bottom bar: stack ICP and name */
+  footer > div:last-child {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+}
+
+/* Header: tighter on mobile */
+@media (max-width: 640px) {
+  header .mx-auto {
+    padding-left: 5vw !important;
+    padding-right: 5vw !important;
+  }
+}
+
+/* General: prevent horizontal overflow */
+@media (max-width: 768px) {
+  .overflow-x-hidden {
+    max-width: 100vw;
+  }
+  /* Ensure images/videos don't overflow */
+  img, video {
+    max-width: 100%;
+  }
+}
+
