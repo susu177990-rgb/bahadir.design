@@ -1095,7 +1095,7 @@ function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
                   </span>
                 </div>
               </div>
-              <h3 style={{ fontSize: "clamp(1.8rem, 8vw, 3.5rem)", fontWeight: 900, color: "var(--text)", margin: 0, lineHeight: 1.0, letterSpacing: "-0.04em", textTransform: "uppercase" as const, whiteSpace: "pre-line" }}>
+              <h3 style={{ fontSize: "clamp(1.8rem, 8vw, 3.5rem)", fontWeight: 900, color: "var(--text)", margin: 0, lineHeight: p.title === "otato.cn\notato.art" ? 1.2 : 1.0, letterSpacing: "-0.04em", textTransform: "uppercase" as const, whiteSpace: "pre-line" }}>
                 {p.title === "otato.cn\notato.art" ? (
                   <>
                     <a href="https://otato.cn" target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "underline", textUnderlineOffset: 8 }}>otato.cn ↗</a>
@@ -1218,7 +1218,7 @@ function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
                     fontWeight: 900,
                     color: "var(--text)",
                     margin: 0,
-                    lineHeight: 0.95,
+                    lineHeight: p.title === "otato.cn\notato.art" ? 1.15 : 0.95,
                     letterSpacing: "-0.04em",
                     textTransform: "uppercase",
                     marginBottom: "3vh",
@@ -1394,8 +1394,17 @@ function ScaleParallaxDarkWrapper() {
       const windowHeight = window.innerHeight;
       const rect = darkLayer.getBoundingClientRect();
 
+      // Hero 完全可见时（dark layer 在视口下方）：保持字不灰
+      if (rect.top >= windowHeight) {
+        darkLayer.style.transform = "none";
+        darkLayer.style.borderRadius = "0";
+        if (heroInner) {
+          heroInner.style.transform = "scale(1)";
+          heroInner.style.opacity = "1";
+        }
+      }
       // Top Entering Logic (sliding up over Hero)
-      if (rect.top > 0 && rect.top <= windowHeight) {
+      else if (rect.top > 0 && rect.top <= windowHeight) {
         const progress = rect.top / windowHeight; // 1 (bottom) to 0 (top)
         
         // Dark layer shrinks horizontally to create gap effect as it enters

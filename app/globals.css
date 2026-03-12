@@ -17,7 +17,13 @@
 html {
   scroll-behavior: smooth;
   cursor: none;
-  scroll-snap-type: y proximity;
+}
+
+/* 仅桌面端启用 scroll-snap，移动端关闭以保持滑动丝滑 */
+@media (min-width: 769px) {
+  html {
+    scroll-snap-type: y proximity;
+  }
 }
 
 body {
@@ -27,6 +33,13 @@ body {
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* 移动端惯性滑动更丝滑 */
+@media (max-width: 768px) {
+  html, body {
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 /* Custom cursor */
