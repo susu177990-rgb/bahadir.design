@@ -78,7 +78,7 @@ export const projects: Project[] = [
     videos: [
       "/video/《极速天际线》.webm",
       "/video/《他骑着家走》.webm",
-      "/video/《失重未来》.MP4"
+      "/video/《失重未来》.webm"
     ]
   },
 ];
