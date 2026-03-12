@@ -12,10 +12,9 @@ export default function Header() {
 
   return (
     <header className="absolute top-0 z-40 w-full mix-blend-difference">
-      <div className="mx-auto flex w-full flex-col items-start justify-between gap-y-4 px-[6vw] pt-8 md:flex-row md:items-center lg:pt-10">
-
-        {/* Left Side: Designation */}
-        <div className="flex w-full items-start md:w-auto">
+      <div className="mx-auto flex w-full flex-row items-center justify-between px-[6vw] pt-8 lg:pt-10">
+        {/* Left: Designation */}
+        <div className="flex items-start">
           <span
             style={{
               display: "block",
@@ -33,11 +32,11 @@ export default function Header() {
           </span>
         </div>
 
-        {/* Right Side: Navigation */}
-        <nav className="flex w-full justify-start md:w-auto md:justify-end">
-          <ul className="m-0 flex flex-col items-start justify-start gap-y-2 font-semibold text-[#fff] md:flex-row md:items-center md:gap-x-10 md:gap-y-0">
+        {/* Right: Horizontal nav (mobile + desktop) */}
+        <nav className="flex justify-end">
+          <ul className="m-0 flex flex-row items-center gap-x-4 font-semibold text-[#fff] sm:gap-x-6 md:gap-x-10">
             {navItems.map((item) => (
-              <li key={item.label} className="flex leading-normal md:leading-snug">
+              <li key={item.label} className="flex leading-snug">
                 <Link
                   href={item.href}
                   className="group relative block h-fit cursor-none overflow-hidden select-none"

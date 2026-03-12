@@ -17,6 +17,7 @@
 html {
   scroll-behavior: smooth;
   cursor: none;
+  scroll-snap-type: y proximity;
 }
 
 body {
@@ -124,6 +125,16 @@ body {
   #services > div[style*="gridTemplateColumns"] {
     grid-template-columns: 1fr !important;
   }
+  /* Scroll snap: 我做什么 section - snap to show title */
+  #services {
+    scroll-snap-align: start;
+    scroll-margin-top: 0;
+    padding-top: 10vh !important;
+  }
+  /* Services cards: stick higher so section sits higher when stopped */
+  .services-sticky-card-0 { top: 12vh !important; }
+  .services-sticky-card-1 { top: calc(12vh + 100px) !important; }
+  .services-sticky-card-2 { top: calc(12vh + 200px) !important; }
 }
 
 /* Selected Works: stack vertically on mobile */
@@ -146,10 +157,10 @@ body {
     grid-template-columns: 1fr !important;
     gap: 6vh !important;
   }
-  /* Skills grid: single column on mobile */
+  /* Skills grid: keep 3 columns on mobile */
   #about [style*="repeat(3, 1fr)"] {
-    grid-template-columns: 1fr !important;
-    gap: 4vh !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: clamp(12px, 3vw, 24px) !important;
   }
 }
 
@@ -159,8 +170,8 @@ body {
     padding: 12vh 5vw 6vh !important;
   }
   footer > div:first-child {
-    grid-template-columns: 1fr !important;
-    gap: 5vh !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 5vw !important;
   }
   /* Bottom bar: stack ICP and name */
   footer > div:last-child {

@@ -119,6 +119,7 @@ function ServicesStack({ services }: { services: typeof servicesData }) {
           }}
         >
           <div
+            className={`services-sticky-card-${i}`}
             style={{
               position: "sticky",
               top: `calc(12vh + ${i * 150}px)`,
@@ -303,7 +304,8 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
     
     const fade = (now: number) => {
       const progress = Math.min((now - startTime) / duration, 1);
-      video.volume = startVol + (1 - startVol) * progress;
+      const vol = Math.max(0, Math.min(1, startVol + (1 - startVol) * progress));
+      video.volume = vol;
       if (progress < 1) {
         fadeRef.current = requestAnimationFrame(fade);
       }
@@ -322,7 +324,7 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
     
     const fade = (now: number) => {
       const progress = Math.min((now - startTime) / duration, 1);
-      const currentVol = Math.max(0, startVol * (1 - progress));
+      const currentVol = Math.max(0, Math.min(1, startVol * (1 - progress)));
       video.volume = currentVol;
       if (progress < 1) {
         fadeRef.current = requestAnimationFrame(fade);
@@ -1133,7 +1135,7 @@ function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
                       height={800}
                       style={{ width: "100%", height: "auto", display: "block" }}
                       sizes="100vw"
-                      quality={80}
+                      quality={95}
                       priority={i === 0 && mediaIdx === 0}
                     />
                   )}
@@ -1365,7 +1367,7 @@ function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
                         display: "block",
                       }}
                       sizes="(max-width: 768px) 100vw, 50vw"
-                      quality={85}
+                      quality={95}
                       priority={p.featured && mediaIdx === 0} // Only priority for featured project thumbnails
                     />
                   )}
