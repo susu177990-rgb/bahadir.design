@@ -267,6 +267,7 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
     const video = videoRef.current;
     if (!video) return;
 
+    // 默认初始状态：静音，音量为 0
     video.muted = true;
     video.volume = 0;
 
@@ -293,10 +294,11 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
     if (!video) return;
     if (fadeRef.current) cancelAnimationFrame(fadeRef.current);
 
+    // 鼠标进入：立刻解除静音
     video.muted = false;
     
     let startTime = performance.now();
-    const duration = 200;
+    const duration = 150; // 稍微加快渐入
     const startVol = video.volume;
     
     const fade = (now: number) => {
@@ -315,12 +317,13 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
     if (fadeRef.current) cancelAnimationFrame(fadeRef.current);
 
     let startTime = performance.now();
-    const duration = 300;
+    const duration = 250; 
     const startVol = video.volume;
     
     const fade = (now: number) => {
       const progress = Math.min((now - startTime) / duration, 1);
-      video.volume = startVol * (1 - progress);
+      const currentVol = Math.max(0, startVol * (1 - progress));
+      video.volume = currentVol;
       if (progress < 1) {
         fadeRef.current = requestAnimationFrame(fade);
       } else {
@@ -335,7 +338,6 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
       ref={videoRef}
       src={src}
       loop
-      muted
       playsInline
       preload="auto"
       onMouseEnter={handleMouseEnter}
