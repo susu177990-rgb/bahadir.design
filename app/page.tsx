@@ -261,76 +261,73 @@ const renderTextWithLinks = (text: string) => {
 // ─── Lazy Video Component ───────────────────────────────────────────────────
 function LazyVideo({ src, alt }: { src: string; alt: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const fadeRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fadeRef = useRef<number | null>(null);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    // 初始化：静音、音量为 0
     video.muted = true;
     video.volume = 0;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          video.play().catch(() => {}).then(() => {
-            // 视频开始播放后，瞬间预热音轨：
-            // unmute → 立刻 mute，强制浏览器提前缓冲音频数据
-            // 这样后续鼠标悬停时音轨已在内存中，不会卡顿
-            video.muted = false;
-            requestAnimationFrame(() => {
-              video.muted = true;
-            });
-          });
+          video.play().catch(() => {});
         } else {
           video.pause();
-          // 离开视口时静音
-          video.muted = true;
-          video.volume = 0;
         }
       },
       { threshold: 0.1 }
     );
 
     observer.observe(video);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      if (fadeRef.current) cancelAnimationFrame(fadeRef.current);
+    };
   }, []);
 
-  // 鼠标悬停：直接操作 DOM，不触发 React 重渲染
   const handleMouseEnter = () => {
     const video = videoRef.current;
     if (!video) return;
-    if (fadeRef.current) clearTimeout(fadeRef.current);
+    if (fadeRef.current) cancelAnimationFrame(fadeRef.current);
 
-    // 先解除静音，再渐入音量
     video.muted = false;
-    let vol = 0;
-    const fadeIn = () => {
-      vol = Math.min(vol + 0.1, 1);
-      video.volume = vol;
-      if (vol < 1) fadeRef.current = setTimeout(fadeIn, 30);
+    
+    let startTime = performance.now();
+    const duration = 200;
+    const startVol = video.volume;
+    
+    const fade = (now: number) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      video.volume = startVol + (1 - startVol) * progress;
+      if (progress < 1) {
+        fadeRef.current = requestAnimationFrame(fade);
+      }
     };
-    fadeIn();
+    fadeRef.current = requestAnimationFrame(fade);
   };
 
   const handleMouseLeave = () => {
     const video = videoRef.current;
     if (!video) return;
-    if (fadeRef.current) clearTimeout(fadeRef.current);
+    if (fadeRef.current) cancelAnimationFrame(fadeRef.current);
 
-    // 渐出音量，再静音
-    let vol = video.volume;
-    const fadeOut = () => {
-      vol = Math.max(vol - 0.1, 0);
-      video.volume = vol;
-      if (vol > 0) {
-        fadeRef.current = setTimeout(fadeOut, 30);
+    let startTime = performance.now();
+    const duration = 300;
+    const startVol = video.volume;
+    
+    const fade = (now: number) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      video.volume = startVol * (1 - progress);
+      if (progress < 1) {
+        fadeRef.current = requestAnimationFrame(fade);
       } else {
         video.muted = true;
       }
     };
-    fadeOut();
+    fadeRef.current = requestAnimationFrame(fade);
   };
 
   return (
@@ -349,6 +346,7 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
         display: "block",
         backgroundColor: "#111",
         cursor: "pointer",
+        willChange: "transform",
       }}
       aria-label={alt}
     />

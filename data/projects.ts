@@ -76,9 +76,9 @@ export const projects: Project[] = [
     background: "1. 美团一对一急送大赛-《极速天际线》\n2. 抖音 AI 浪潮计划《他骑着家走》\n3. 原创 AI MV《失重未来》",
     role: "与搭档[@超级大糍粑](https://v.douyin.com/fNPc5MYt3A4/)合作共同完成。我在其中负责了 部分分镜和视频片段的生成，以及主要的剪辑工作",
     videos: [
-      "/video/《极速天际线》.webm",
-      "/video/《他骑着家走》.webm",
-      "/video/《失重未来》.webm"
+      "/video/05_1.webm",
+      "/video/05_2.webm",
+      "/video/05_3.webm"
     ]
   },
 ];
