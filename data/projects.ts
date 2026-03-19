@@ -16,6 +16,8 @@ export interface Project {
   videos?: string[]; // Used for multi-video projects like AI Video
 }
 
+const autoPicturebookImage = "/image/02.webp?v=20260319-1347";
+
 export const projects: Project[] = [
   {
     slug: "ruiguang-picturebook",
@@ -35,9 +37,9 @@ export const projects: Project[] = [
     shortName: "自动化绘本",
     category: "产品与工具",
     tagline: "全自动化一体化管线，制作效力提升 20 倍且不降质。",
-    thumbnail: "/image/02.webp",
+    thumbnail: autoPicturebookImage,
     featured: true,
-    images: ["/image/02.webp"],
+    images: [autoPicturebookImage],
     background: "端到端全自动批量生成工具，将非标创作转化为高效工业流：\n写故事剧本 → 画风提取 → 设计角色 → 制作分页 → 自动配文，实现全流程一体化运作。",
     role: "核心架构与全栈开发。\n封装设定、拆解、生成三阶段工作流，通过并发调度引擎实现 20 倍效力提升，同时确保每一页都具备高水准艺术质感。",
   },

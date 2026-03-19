@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
+    localPatterns: [{ pathname: "/**" }],
     qualities: [75, 80, 85, 95],
   },
   async redirects() {
