@@ -46,13 +46,13 @@
 
 | 层 | 技术 |
 |---|------|
-| 框架 | Next.js 15 (App Router) |
+| 框架 | Next.js 16 (App Router) |
 | 语言 | TypeScript |
 | 样式 | Vanilla CSS + Tailwind CSS |
 | 动画 | Intersection Observer API + CSS 过渡 |
 | 图像优化 | `next/image`（自动 WebP 转换 + 按需 Lazy Load） |
 | 视频优化 | 自定义 `LazyVideo` 组件（视口播放 + 悬停开声） |
-| 部署 | Vercel / GitHub Pages |
+| 部署 | Vercel |
 
 ---
 
@@ -103,7 +103,7 @@ bahadir.design/
 ├── data/
 │   └── projects.ts       # 项目数据源（标题、描述、媒体路径）
 ├── public/
-│   ├── image/            # 项目长图（JPEG）
+│   ├── image/            # 项目长图（WebP）
 │   ├── video/            # 项目视频（MP4）
 │   └── resume.pdf        # 可下载简历
 └── next.config.mjs       # Next.js 配置（图片 quality 白名单）

@@ -298,7 +298,7 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
     // 鼠标进入：立刻解除静音
     video.muted = false;
     
-    let startTime = performance.now();
+    const startTime = performance.now();
     const duration = 150; // 稍微加快渐入
     const startVol = video.volume;
     
@@ -318,7 +318,7 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
     if (!video) return;
     if (fadeRef.current) cancelAnimationFrame(fadeRef.current);
 
-    let startTime = performance.now();
+    const startTime = performance.now();
     const duration = 250; 
     const startVol = video.volume;
     
@@ -885,7 +885,7 @@ export default function Home() {
                     const email = (form.elements.namedItem("email") as HTMLInputElement)?.value || "";
                     const message = (form.elements.namedItem("message") as HTMLTextAreaElement)?.value || "";
                     const subject = encodeURIComponent(`来自 ${name} 的消息`);
-                    const body = encodeURIComponent(`姓名：${name}\n邮符1：${email}\n\n${message}`);
+                    const body = encodeURIComponent(`姓名：${name}\n邮箱：${email}\n\n${message}`);
                     window.location.href = `mailto:griffith_huo@outlook.com?subject=${subject}&body=${body}`;
                   }}
                 >
