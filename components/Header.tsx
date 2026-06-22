@@ -4,9 +4,9 @@ import Link from "next/link";
 
 export default function Header() {
   const navItems = [
-    { label: "服务", href: "#services" },
-    { label: "作品", href: "#works" },
-    { label: "关于", href: "#about" },
+    { label: "优势", href: "#services" },
+    { label: "案例", href: "#works" },
+    { label: "关于我", href: "#about" },
     { label: "联系", href: "#contact" },
   ];
 
@@ -28,7 +28,7 @@ export default function Header() {
               letterSpacing: "0.05em",
             }}
           >
-            AIGC 创作者 · 设计师
+            AIGC · VIBE CODING
           </span>
         </div>
 

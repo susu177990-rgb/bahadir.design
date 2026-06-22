@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import Header from "@/components/Header";
 import CustomCursor from "@/components/CustomCursor";
-import { projects, type Project } from "@/data/projects";
-import Image from "next/image";
+import { portfolioSections, type PortfolioContentBlock, type PortfolioGroup, type PortfolioPreview, type PortfolioSection } from "@/data/projects";
 
 // ─── Scroll Reveal Hook ───────────────────────────────────────────────────────
 function useReveal() {
@@ -90,12 +89,24 @@ function StaggeredText({ text, delayOffset = 0, style: customStyle }: { text: st
   );
 }
 
-// ─── Services Stack (JS 控制：依次滚入 + 一起滑走) ─────────────────────────────
-function ServicesStack({ services }: { services: typeof servicesData }) {
+// ─── Services Stack (标题与能力卡同一滚动系统) ───────────────────────────────────
+function ServicesStack({
+  services,
+  intro,
+}: {
+  services: typeof servicesData;
+  intro: React.ReactNode;
+}) {
+  const headerLeadVh = 72;
+  const cardStepVh = 72;
+  const stackHoldVh = 128;
+  const cardLiftGapPx = 180;
+  const cardBaseTopVh = 34;
+
   // 采用 CSS Absolute + Sticky 的嵌套架构：
-  // 1. 各卡片在 absolute 容器中拥有不同的 top，实现依次错位滚入视口。
-  // 2. 所有 absolute 容器共享同一个 bottom : 0 边界（即最外层 div 的底部）。
-  // 3. 当滚到最外层底部时，所有的 css sticky 会在“同一时刻”被挤上去，从而实现完美的“三张一起滑走”交互，且不会发生卡片互相覆盖挤压，也避免了 JS `transform` 动画的跳跃感。
+  // 1. 标题区和能力卡都放进同一个 relative 容器里。
+  // 2. 标题区单独 sticky 在上方，能力卡在其下方依次进入。
+  // 3. 到容器底部时，标题区与能力卡被同一个 bottom 边界一起带走。
   return (
     <div
       style={{
@@ -103,15 +114,43 @@ function ServicesStack({ services }: { services: typeof servicesData }) {
         width: "100%",
       }}
     >
-      {/* 滚动占位区：提供自然滚动的距离。3 张卡片 * 100vh 错开高度，加上额外的 50vh 给最后一张卡片留出更短的停顿阅读的时间 */}
-      <div style={{ height: `${services.length * 100 + 50}vh`, width: "100%" }} />
+      <div
+        style={{
+          height: `${headerLeadVh + (services.length - 1) * cardStepVh + stackHoldVh}vh`,
+          width: "100%",
+        }}
+      />
+
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          bottom: `${services.length * cardLiftGapPx}px`,
+          left: 0,
+          right: 0,
+          pointerEvents: "none",
+        }}
+      >
+        <div
+          style={{
+            position: "sticky",
+            top: "8vh",
+            zIndex: 5,
+            background: "var(--bg-dark)",
+            pointerEvents: "auto",
+            paddingBottom: "5vh",
+          }}
+        >
+          {intro}
+        </div>
+      </div>
 
       {services.map((s, i) => (
         <div
           key={s.num}
           style={{
             position: "absolute",
-            top: `${i * 100}vh`,
+            top: `${headerLeadVh + i * cardStepVh}vh`,
             bottom: `${(services.length - 1 - i) * 150}px`,
             left: 0,
             right: 0,
@@ -122,7 +161,7 @@ function ServicesStack({ services }: { services: typeof servicesData }) {
             className={`services-sticky-card-${i}`}
             style={{
               position: "sticky",
-              top: `calc(12vh + ${i * 150}px)`,
+              top: `calc(${cardBaseTopVh}vh + ${i * cardLiftGapPx}px)`,
               background: "var(--bg-dark)",
               zIndex: i + 10,
               pointerEvents: "auto", // 恢复卡片自身的事件相交
@@ -139,7 +178,7 @@ function ServicesStack({ services }: { services: typeof servicesData }) {
             <Reveal delay={0}>
               <div>
                 <span style={{ fontSize: "clamp(2.5rem, 6vw, 5rem)", fontWeight: 800, color: "var(--text)", lineHeight: 1, display: "block" }}>
-                  ({s.num})
+                  {s.num}
                 </span>
               </div>
             </Reveal>
@@ -175,33 +214,23 @@ function ServicesStack({ services }: { services: typeof servicesData }) {
 // ─── Services data ────────────────────────────────────────────────────────────
 const servicesData = [
   {
-    num: "01",
-    title: "AI 绘本与视觉",
-    desc: "从角色设定到多页场景连贯性，用提示词工程将非标准化创作转化为标准化流水线。在不降质的前提下，将团队绘本产出效率提升 20 倍。",
+    num: "一",
+    title: "AIGC 制作能力",
+    desc: "对应后面的 AIGC 制作案例。重点不是单张生成，而是把 AI 视频执行、虚拟模特、绘本和提效流程做成可交付的内容生产能力。",
     tech: [
-      ["01", "SD · ComfyUI · MJ · Nano Banana · 角色/场景一致性"],
-      ["02", "JSON 提示词逆向工程"],
-      ["03", "Vibe Coding · 批量生成"],
+      ["01", "AI Video · 镜头生成 · 视频素材交付"],
+      ["02", "虚拟模特 · 社媒内容 · 儿童绘本"],
+      ["03", "提效增质 · Prompt · Skill 工作流 · 质量控制"],
     ],
   },
   {
-    num: "02",
-    title: "产品与工具开发",
-    desc: "Vibe Coding 驱动，从 0 到 1 搭建 AI 摄影平台 oTATo.art、全自动绘本生成软件。将工作流、拆解引擎、并发调度打包成工业化产品。",
+    num: "二",
+    title: "Vibe Coding 开发能力",
+    desc: "对应后面的 Vibe Coding 开发案例。重点是把真实需求做成能上线、能维护、能继续迭代的产品、工具、Agent、网站和 Skill 系统。",
     tech: [
-      ["01", "Next.js · React · 全栈建站"],
-      ["02", "Cursor · Trae · AI 辅助编程"],
-      ["03", "自动化引擎 · 流水线封装"],
-    ],
-  },
-  {
-    num: "03",
-    title: "AI 视频",
-    desc: "MV 制作、商业比赛、平台打榜。熟悉 See dance · Sora · Veo 等工具，产出可商用的 AI 视频内容，具备高要求 B 端交付能力。",
-    tech: [
-      ["01", "See dance · Sora · Veo"],
-      ["02", "商业 MV · 品牌视频"],
-      ["03", "平台打榜 · 参赛作品"],
+      ["01", "OTATO.CN · OTATO.ART · 自动化绘本工具"],
+      ["02", "个人工作流 Agent · 福乐音乐工作室官网"],
+      ["03", "Skill 合集 · 开源仓库 · 可安装模块"],
     ],
   },
 ];
@@ -209,16 +238,16 @@ const servicesData = [
 // ─── Skills data ──────────────────────────────────────────────────────────────
 const skillColumns = [
   {
-    label: "AIGC 工具",
-    items: ["ComfyUI", "MidJourney", "Stable Diffusion", "See dance", "Sora", "Veo", "Kling"],
+    label: "AIGC Control",
+    items: ["角色一致性", "场景连续性", "AI 视频分镜", "虚拟 IP", "风格 DNA", "Prompt Library"],
   },
   {
-    label: "开发能力",
-    items: ["Next.js", "React", "TypeScript", "Cursor", "Trae", "全栈建站", "API 集成"],
+    label: "Vibe Coding",
+    items: ["Next.js", "React", "TypeScript", "Supabase", "Prisma", "S3", "Docker"],
   },
   {
-    label: "核心方法论",
-    items: ["JSON 逆向工程", "Vibe Coding", "视觉管线自动化", "一致性控制", "数字资产沉淀", "工作流拆解"],
+    label: "Workflow Systems",
+    items: ["自动化管线", "可安装 Skills", "工作台产品", "批量生成", "资产沉淀", "开源仓库"],
   },
 ];
 
@@ -268,7 +297,6 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
     const video = videoRef.current;
     if (!video) return;
 
-    // 默认初始状态：静音，音量为 0
     video.muted = true;
     video.volume = 0;
 
@@ -295,17 +323,15 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
     if (!video) return;
     if (fadeRef.current) cancelAnimationFrame(fadeRef.current);
 
-    // 鼠标进入：立刻解除静音
     video.muted = false;
-    
+
     const startTime = performance.now();
-    const duration = 150; // 稍微加快渐入
+    const duration = 150;
     const startVol = video.volume;
-    
+
     const fade = (now: number) => {
       const progress = Math.min((now - startTime) / duration, 1);
-      const vol = Math.max(0, Math.min(1, startVol + (1 - startVol) * progress));
-      video.volume = vol;
+      video.volume = Math.max(0, Math.min(1, startVol + (1 - startVol) * progress));
       if (progress < 1) {
         fadeRef.current = requestAnimationFrame(fade);
       }
@@ -319,13 +345,12 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
     if (fadeRef.current) cancelAnimationFrame(fadeRef.current);
 
     const startTime = performance.now();
-    const duration = 250; 
+    const duration = 250;
     const startVol = video.volume;
-    
+
     const fade = (now: number) => {
       const progress = Math.min((now - startTime) / duration, 1);
-      const currentVol = Math.max(0, Math.min(1, startVol * (1 - progress)));
-      video.volume = currentVol;
+      video.volume = Math.max(0, Math.min(1, startVol * (1 - progress)));
       if (progress < 1) {
         fadeRef.current = requestAnimationFrame(fade);
       } else {
@@ -340,6 +365,7 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
       ref={videoRef}
       src={src}
       loop
+      muted
       playsInline
       preload="auto"
       onMouseEnter={handleMouseEnter}
@@ -415,7 +441,7 @@ export default function Home() {
                   textAlign: "left",
                   minWidth: 0
                 }}>
-                   AI 视觉工程 · 全栈开发 · 工作流自动化
+                   AIGC Production · Vibe Coding Systems
                 </span>
 
                 <div style={{ display: "grid", gridTemplateColumns: "1fr", justifyItems: "start", gap: "0.4em", lineHeight: 0.88, margin: 0, padding: 0, minWidth: 0 }}>
@@ -479,7 +505,7 @@ export default function Home() {
                       maxWidth: "380px",
                       marginTop: "0.5vh"
                     }}>
-                      我将分散的生成式 AI 转化为标准化的工业级管线。从自动化工具开发到视觉资产量产，交付可复用、可扩展的系统。承接全球商业项目与技术咨询。
+                      我用 AI 做视觉生产，也用代码把创作流程产品化、系统化、可复用化。从 AIGC 作品到 GitHub 仓库，交付可运行的产品与可复用的工作流。
                     </p>
                     <button
                       type="button"
@@ -521,17 +547,6 @@ export default function Home() {
                 {/* Right: Availability & Date - 右对齐，增强视觉平衡 */}
                 <div style={{ textAlign: "right", display: "flex", flexDirection: "column", justifyContent: "flex-end", alignItems: "flex-end", gap: "0.5vh" }}>
                   <Reveal delay={0.8}>
-                    <p style={{ 
-                      fontSize: "10px", 
-                      fontWeight: 600, 
-                      textTransform: "uppercase", 
-                      letterSpacing: "0.12em",
-                      color: "#1a1915",
-                      opacity: 0.5,
-                      marginBottom: "0.5vh"
-                    }}>
-                      可接项目时间
-                    </p>
                     <h2 style={{ 
                       fontSize: "clamp(3rem, 6.5vw, 8rem)", 
                       fontWeight: 900, 
@@ -540,7 +555,7 @@ export default function Home() {
                       color: "#1a1915",
                       margin: 0
                     }}>
-                      MAR&apos;26
+                      JUN&apos;26
                     </h2>
                   </Reveal>
                 </div>
@@ -568,60 +583,28 @@ export default function Home() {
               padding: "18vh 6vw",
             }}
           >
-          <Reveal>
-            <h2
-              style={{
-                fontSize: "clamp(3rem, 10vw, 10rem)",
-                fontWeight: 900,
-                letterSpacing: "-0.03em",
-                textTransform: "uppercase",
-                lineHeight: 1.1,
-                color: "var(--text)",
-                marginBottom: "5vh",
-              }}
-            >
-              我做什么 /
-            </h2>
-          </Reveal>
-
-          {/* Services intro */}
-          <Reveal delay={0.1}>
-            <div
-              style={{
-                display: "flex",
-                gap: "clamp(20px, 5vw, 80px)",
-                marginBottom: "6vh",
-                flexWrap: "wrap",
-              }}
-            >
-              <span
-                style={{
-                  fontSize: "12px",
-                  letterSpacing: "0.15em",
-                  textTransform: "uppercase",
-                  color: "var(--text-muted)",
-                  minWidth: 120,
-                  paddingTop: 4,
-                }}
-              >
-                (服务)
-              </span>
-              <p
-                style={{
-                  maxWidth: 520,
-                  fontSize: "clamp(14px, 1.5vw, 18px)",
-                  lineHeight: 1.7,
-                  color: "var(--text-muted)",
-                  fontWeight: 500,
-                }}
-              >
-                专注 AI 视觉生产的技术化与流水线化，从 Prompt 到批量生成，从单次创作到可复用系统。
-              </p>
-            </div>
-          </Reveal>
-
-          {/* Service items: JS 控制，依次滚入 + 一起滑走 */}
-          <ServicesStack services={servicesData} />
+            <ServicesStack
+              services={servicesData}
+              intro={
+                <>
+                  <Reveal>
+                    <h2
+                      style={{
+                        fontSize: "clamp(3rem, 10vw, 10rem)",
+                        fontWeight: 900,
+                        letterSpacing: "-0.03em",
+                        textTransform: "uppercase",
+                        lineHeight: 1.1,
+                        color: "var(--text)",
+                        marginBottom: "5vh",
+                      }}
+                    >
+                      优势
+                    </h2>
+                  </Reveal>
+                </>
+              }
+            />
           </section>
 
         {/* ═══ SELECTED WORKS ════════════════════════════════════════════════ */}
@@ -643,47 +626,16 @@ export default function Home() {
                 marginBottom: "5vh",
               }}
             >
-              精选作品 /
+              案例
             </h2>
           </Reveal>
 
           <Reveal delay={0.1}>
-            <div
-              style={{
-                display: "flex",
-                gap: "clamp(20px, 5vw, 80px)",
-                marginBottom: "6vh",
-                flexWrap: "wrap",
-              }}
-            >
-              <span
-                style={{
-                  fontSize: "12px",
-                  letterSpacing: "0.15em",
-                  textTransform: "uppercase",
-                  color: "var(--text-muted)",
-                  minWidth: 120,
-                  paddingTop: 4,
-                }}
-              >
-                (项目)
-              </span>
-              <p
-                style={{
-                  fontSize: "clamp(14px, 1.5vw, 18px)",
-                  lineHeight: 1.7,
-                  color: "var(--text-muted)",
-                  fontWeight: 500,
-                  maxWidth: 500,
-                }}
-              >
-                绘本、工具、AI 视频 —— 技术与视觉的交叉点
-              </p>
-            </div>
+            <div style={{ marginBottom: "2vh" }} />
           </Reveal>
 
           {/* Project list (Split Layout Sticky) */}
-          <SelectedWorksTimeline projects={projects} />
+          <SelectedWorksTimeline sections={portfolioSections} />
         </section>
 
         {/* ═══ ABOUT ══════════════════════════════════════════════════════════ */}
@@ -715,8 +667,9 @@ export default function Home() {
                     marginBottom: "4vh",
                   }}
                 >
-                  AI 视觉工程专家 /<br />
-                  全栈开发者 /
+                  意向岗位<br />
+                  AI技术专家<br />
+                  AI产品/项目经理
                 </h2>
                 <p
                   style={{
@@ -728,7 +681,7 @@ export default function Home() {
                     marginBottom: "3vh",
                   }}
                 >
-                  我将分散的生成式 AI 转化为标准化的工业级管线。已主导交付 30+ 商业化 AI 绘本，实现视觉管线 20 倍效能跨越。
+                  我不是单点做图，也不是单点写代码。我把 AIGC 创作经验转化为可运行产品、可安装模块和可交付管线。
                 </p>
                 <p
                   style={{
@@ -740,7 +693,7 @@ export default function Home() {
                     marginBottom: "5vh",
                   }}
                 >
-                  人物与场景的一致性是我的交付底线。从 SaaS 平台的一键式架构到大规模数字资产沉淀，我不仅在“使用” AI，更在用系统思维定义 AIGC 的生产标准。
+                  AIGC 负责视觉质量、内容连续性和生产效率；Vibe Coding 负责把这些经验工程化、产品化、开源化。两者之间的桥，是可复用的工作流资产。
                 </p>
                 <a
                   href="/resume.pdf"
@@ -783,7 +736,7 @@ export default function Home() {
                     letterSpacing: "-0.02em",
                   }}
                 >
-                  技能
+                  关于我
                 </h3>
                 <div
                   style={{
@@ -999,7 +952,7 @@ export default function Home() {
             <div>
               <h4 style={{ fontSize: "13px", fontWeight: 700, margin: 0, color: "var(--bg-dark)", marginBottom: 12 }}>导航</h4>
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {[{ label: "首页", href: "#" }, { label: "服务", href: "#services" }, { label: "作品", href: "#works" }, { label: "关于", href: "#about" }].map(({ label, href }) => (
+                {[{ label: "首页", href: "#" }, { label: "优势", href: "#services" }, { label: "案例", href: "#works" }, { label: "关于我", href: "#about" }].map(({ label, href }) => (
                   <a key={label} href={href} className="footer-link" style={{ color: "var(--bg-dark)", opacity: 0.6, fontSize: 13, textDecoration: "none" }}>{label}</a>
                 ))}
               </div>
@@ -1044,8 +997,11 @@ export default function Home() {
   );
 }
 
-// ─── Selected Works (Split View Timeline) ──────────────────────────────────────
-function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
+// ─── Selected Works (Chaptered Portfolio Timeline) ────────────────────────────
+function SelectedWorksTimeline({ sections }: { sections: PortfolioSection[] }) {
+  const items = sections.flatMap((section) =>
+    section.groups.map((group) => ({ section, group }))
+  );
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
 
@@ -1057,7 +1013,7 @@ function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
   }, []);
 
   useEffect(() => {
-    if (isMobile) return; // On mobile, no observer needed
+    if (isMobile) return;
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -1067,7 +1023,6 @@ function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
           }
         });
       },
-      // When the image enters the middle 50% of the screen, we switch the active index
       { rootMargin: "-25% 0px -25% 0px", threshold: 0 }
     );
 
@@ -1075,91 +1030,463 @@ function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
     elements.forEach((el) => observer.observe(el));
 
     return () => observer.disconnect();
-  }, [isMobile]);
+  }, [isMobile, items.length]);
 
-  // ── Mobile: stacked vertical layout ──────────────────────────────────────
+  const renderLinkPills = (group: PortfolioGroup) => {
+    if (!group.links?.length) return null;
+
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "0.8vh", marginTop: "0.4vh" }}>
+        {group.links.map((link) => (
+          <a
+            key={`${group.slug}-${link.label}`}
+            href={link.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              color: "var(--text)",
+              fontSize: "clamp(1rem, 1.5vw, 1.4rem)",
+              fontWeight: 900,
+              letterSpacing: "-0.03em",
+              lineHeight: 1.08,
+              textTransform: "uppercase",
+              textDecoration: "underline",
+              textUnderlineOffset: "0.18em",
+              textDecorationThickness: "0.06em",
+              transition: "opacity 0.2s",
+            }}
+            onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.65")}
+            onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+          >
+            {link.label} ↗
+          </a>
+        ))}
+      </div>
+    );
+  };
+
+  const renderContentBlock = (block: PortfolioContentBlock) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <span
+        style={{
+          fontSize: 10,
+          fontWeight: 700,
+          textTransform: "uppercase",
+          letterSpacing: "0.15em",
+          color: "var(--text-muted)",
+          borderBottom: "1px solid rgba(212,208,200,0.1)",
+          paddingBottom: 8,
+          marginBottom: 4,
+        }}
+      >
+        {block.label}
+      </span>
+      {block.body ? (
+        <p
+          style={{
+            fontSize: "clamp(13px, 1vw, 15px)",
+            lineHeight: 1.7,
+            color: "rgba(212,208,200,0.7)",
+            margin: 0,
+          }}
+        >
+          {renderTextWithLinks(block.body)}
+        </p>
+      ) : null}
+      {block.items?.length ? (
+        <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
+          {block.items.map((entry) => (
+            <li
+              key={entry}
+              style={{
+                fontSize: "clamp(13px, 1vw, 15px)",
+                lineHeight: 1.7,
+                color: "rgba(212,208,200,0.7)",
+              }}
+            >
+              {renderTextWithLinks(entry)}
+            </li>
+          ))}
+        </ul>
+      ) : null}
+    </div>
+  );
+
+  const renderGroupTitle = (group: PortfolioGroup, compact = false) => {
+    const titleStyle = {
+      fontSize: compact ? "clamp(2.8rem, 12vw, 5.2rem)" : "clamp(3.7rem, 5.2vw, 6.4rem)",
+      fontWeight: 900,
+      color: "var(--text)",
+      margin: 0,
+      lineHeight: 0.95,
+      letterSpacing: "-0.04em",
+      textTransform: "uppercase" as const,
+    };
+
+    if (!group.titleLink) {
+      return <h3 style={titleStyle}>{group.title}</h3>;
+    }
+
+    return (
+      <h3 style={titleStyle}>
+        <a
+          href={group.titleLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            color: "inherit",
+            textDecoration: "underline",
+            textUnderlineOffset: "0.12em",
+            textDecorationThickness: "0.05em",
+          }}
+        >
+          {group.title} ↗
+        </a>
+      </h3>
+    );
+  };
+
+  const renderGroupText = (section: PortfolioSection, group: PortfolioGroup, compact = false, serialIndex?: number) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: compact ? "2.5vh" : "2.2vh" }}>
+      {compact ? (
+        <div style={{ display: "flex", alignItems: "flex-start", flexDirection: "column", gap: "1vh", marginBottom: "1vh" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.6vh", minWidth: 0 }}>
+            <span
+              style={{
+                padding: "6px 14px",
+                borderRadius: "50px",
+                border: "1px solid rgba(212,208,200,0.15)",
+                fontSize: 10,
+                letterSpacing: "0.15em",
+                textTransform: "uppercase",
+                color: "var(--text)",
+                width: "fit-content",
+                fontFamily: "monospace",
+              }}
+            >
+              {section.title}
+            </span>
+            <span style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 500 }}>
+              {group.marker} / {group.eyebrow}
+            </span>
+          </div>
+          <span
+            style={{
+              fontSize: "clamp(4rem, 18vw, 8rem)",
+              fontWeight: 800,
+              lineHeight: 0.75,
+              color: "var(--text)",
+              letterSpacing: "-0.05em",
+              minWidth: "auto",
+            }}
+          >
+            {section.marker}
+          </span>
+        </div>
+      ) : (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-start",
+            gap: "0.2vh",
+          }}
+        >
+          <span
+            style={{
+              fontSize: "clamp(5rem, 12vw, 14rem)",
+              fontWeight: 900,
+              lineHeight: 0.72,
+              color: "var(--text)",
+              letterSpacing: "-0.06em",
+              minWidth: "auto",
+            }}
+          >
+            {String((serialIndex ?? 0) + 1).padStart(2, "0")}
+          </span>
+
+          {renderGroupTitle(group)}
+        </div>
+      )}
+
+      {compact ? (
+        renderGroupTitle(group, true)
+      ) : null}
+
+      <p
+        style={{
+          fontSize: compact ? "clamp(14px, 3.8vw, 17px)" : "clamp(16px, 1.3vw, 20px)",
+          fontWeight: 500,
+          lineHeight: 1.7,
+          color: "rgba(212,208,200,0.85)",
+          maxWidth: compact ? "100%" : "88%",
+          borderLeft: "2px solid rgba(212,208,200,0.3)",
+          paddingLeft: "1.2rem",
+          marginTop: compact ? 0 : "0.6vh",
+        }}
+      >
+        {group.intro}
+      </p>
+
+      {renderLinkPills(group)}
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", rowGap: compact ? "3vh" : "4vh" }}>
+        {group.contentBlocks.map((block) => (
+          <Fragment key={`${group.slug}-${block.label}`}>
+            {renderContentBlock(block)}
+          </Fragment>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderPlaceholderPreview = (preview: Extract<PortfolioPreview, { type: "placeholder" }>) => (
+      <div
+        style={{
+          minHeight: "clamp(420px, 64vh, 760px)",
+          padding: "clamp(28px, 5vw, 64px)",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          background:
+            "linear-gradient(135deg, rgba(212,208,200,0.07), rgba(212,208,200,0.015) 38%, rgba(10,10,10,1) 100%)",
+        }}
+      >
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 20, alignItems: "flex-start", marginBottom: "8vh" }}>
+            <span style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "monospace", letterSpacing: "0.14em", textTransform: "uppercase" }}>
+              {preview.label}
+            </span>
+            <span style={{ fontSize: 9, color: "var(--text)", fontFamily: "monospace", letterSpacing: "0.12em", textTransform: "uppercase", border: "1px solid rgba(212,208,200,0.18)", borderRadius: 999, padding: "8px 11px", whiteSpace: "nowrap" }}>
+              素材待补
+            </span>
+          </div>
+          <h4
+            style={{
+              fontSize: "clamp(3rem, 7vw, 8rem)",
+              lineHeight: 0.86,
+              letterSpacing: "-0.06em",
+              color: "var(--text)",
+              marginBottom: "4vh",
+            }}
+          >
+            待补素材
+          </h4>
+          <p style={{ fontSize: "clamp(15px, 1.5vw, 20px)", lineHeight: 1.75, color: "rgba(212,208,200,0.78)", maxWidth: 620 }}>
+            {preview.needed}
+          </p>
+        </div>
+
+        <div style={{ borderTop: "1px solid rgba(212,208,200,0.12)", paddingTop: 24 }}>
+          <span style={{ display: "block", fontSize: 10, color: "var(--text-muted)", fontFamily: "monospace", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: 12 }}>
+            FUTURE MATERIAL
+          </span>
+          <p style={{ fontSize: "clamp(13px, 1.2vw, 16px)", lineHeight: 1.7, color: "var(--text-muted)", maxWidth: 620 }}>
+            {preview.note}
+          </p>
+        </div>
+      </div>
+  );
+
+  const renderSkillsPreview = (preview: Extract<PortfolioPreview, { type: "skills" }>) => (
+    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+      {preview.rows.map((row, index) => (
+        <div
+          key={`${preview.label}-${row.name}`}
+          style={{
+            display: "grid",
+            gridTemplateColumns: "minmax(28px, auto) 1fr auto",
+            gridTemplateRows: "auto auto auto",
+            rowGap: 12,
+            alignItems: "start",
+            padding: "20px 18px",
+            borderBottom: index < preview.rows.length - 1 ? "1px solid rgba(212,208,200,0.1)" : "none",
+            fontSize: "clamp(13px, 1vw, 15px)",
+          }}
+        >
+          <span
+            style={{
+              gridRow: "1 / span 2",
+              color: "rgba(212,208,200,0.64)",
+              fontFamily: "monospace",
+              letterSpacing: "0.08em",
+              fontSize: 10,
+            }}
+          >
+            {row.index}
+          </span>
+          <a
+            href={row.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="打开 GitHub 仓库"
+            style={{
+              gridColumn: "2 / span 2",
+              color: "var(--text)",
+              textDecoration: "underline",
+              textUnderlineOffset: "0.14em",
+              textDecorationThickness: "0.06em",
+              fontSize: "clamp(1rem, 1.4vw, 1.2rem)",
+              lineHeight: 1.2,
+              fontFamily: "inherit",
+              fontWeight: 600,
+            }}
+          >
+            {row.name} <span style={{ whiteSpace: "nowrap" }}>↗</span>
+          </a>
+          <span
+            style={{
+              gridColumn: 2,
+              justifySelf: "end",
+              color: "rgba(212,208,200,0.66)",
+              border: "1px solid rgba(212,208,200,0.25)",
+              borderRadius: 999,
+              padding: "3px 10px",
+              fontSize: 10,
+              letterSpacing: "0.09em",
+              textTransform: "uppercase",
+              fontFamily: "monospace",
+            }}
+          >
+            {row.type}
+          </span>
+          <p
+            style={{
+              gridColumn: "2 / span 2",
+              margin: 0,
+              color: "rgba(212,208,200,0.84)",
+              fontSize: "clamp(13px, 1vw, 15px)",
+              lineHeight: 1.68,
+            }}
+          >
+            {row.description}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              void navigator.clipboard.writeText(row.command);
+            }}
+            style={{
+              gridColumn: 2,
+              justifySelf: "start",
+              background: "rgba(212,208,200,0.08)",
+              border: "1px solid rgba(212,208,200,0.28)",
+              borderRadius: 8,
+              color: "var(--text)",
+              fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              maxWidth: "100%",
+              width: "100%",
+              overflowWrap: "anywhere",
+              wordBreak: "break-word",
+              fontSize: 12,
+              lineHeight: 1.4,
+              padding: "10px 12px",
+              textAlign: "left",
+              cursor: "pointer",
+              transition: "background 0.2s",
+            }}
+            onMouseEnter={(event) => {
+              event.currentTarget.style.background = "rgba(212,208,200,0.16)";
+            }}
+            onMouseLeave={(event) => {
+              event.currentTarget.style.background = "rgba(212,208,200,0.08)";
+            }}
+          >
+            {row.command}
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderPreview = (preview: PortfolioPreview, priority = false) => {
+    if (preview.type === "placeholder") return renderPlaceholderPreview(preview);
+    if (preview.type === "skills") return renderSkillsPreview(preview);
+
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+        {preview.items.map((media, mediaIdx) => (
+          <div key={`${media.src}-${mediaIdx}`} style={{ width: "100%", position: "relative", overflow: "hidden" }}>
+            {preview.type === "videos" ? (
+              <LazyVideo src={media.src} alt={media.alt} />
+            ) : (
+              <img
+                src={media.src}
+                alt={media.alt}
+                loading={priority && mediaIdx === 0 ? "eager" : "lazy"}
+                decoding="async"
+                style={{ width: "100%", height: "auto", display: "block" }}
+              />
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const activeSection = items[activeIndex]?.section ?? sections[0];
+
   if (isMobile) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "12vh", marginTop: "6vh", width: "100%" }}>
-        {projects.map((p, i) => (
-          <div key={p.slug} style={{ display: "flex", flexDirection: "column", gap: "4vh" }}>
-            {/* Text panel */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "3vh" }}>
-              <div style={{ display: "flex", alignItems: "flex-start", gap: "4vw", marginBottom: "2vh" }}>
-                <span style={{ fontSize: "clamp(4rem, 18vw, 8rem)", fontWeight: 800, lineHeight: 0.75, color: "var(--text)", letterSpacing: "-0.05em" }}>
-                  0{i + 1}
-                </span>
-                <div style={{ paddingTop: "1vh", display: "flex", flexDirection: "column", gap: "1vh" }}>
-                  <span style={{ padding: "6px 14px", borderRadius: "50px", border: "1px solid rgba(212,208,200,0.15)", fontSize: 10, letterSpacing: "0.15em", textTransform: "uppercase" as const, color: "var(--text)", fontFamily: "monospace" }}>
-                    {p.category}
-                  </span>
-                </div>
-              </div>
-              <h3 style={{ fontSize: "clamp(1.8rem, 8vw, 3.5rem)", fontWeight: 900, color: "var(--text)", margin: 0, lineHeight: p.title === "otato.cn\notato.art" ? 1.2 : 1.0, letterSpacing: "-0.04em", textTransform: "uppercase" as const, whiteSpace: "pre-line" }}>
-                {p.title === "otato.cn\notato.art" ? (
-                  <>
-                    <a href="https://otato.cn" target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "underline", textUnderlineOffset: 8 }}>otato.cn ↗</a>
-                    {"\n"}
-                    <a href="https://otato.art" target="_blank" rel="noopener noreferrer" style={{ color: "inherit", textDecoration: "underline", textUnderlineOffset: 8 }}>otato.art ↗</a>
-                  </>
-                ) : p.title}
+      <div style={{ display: "flex", flexDirection: "column", gap: "14vh", marginTop: "8vh", width: "100%" }}>
+        {sections.map((section) => (
+          <section key={section.title} style={{ display: "flex", flexDirection: "column", gap: "8vh" }}>
+            <div style={{ borderTop: "1px solid rgba(212,208,200,0.25)", paddingTop: "3vh" }}>
+              <p style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "monospace", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: "1.5vh" }}>
+                {section.marker} / {section.subtitle}
+              </p>
+              <h3 style={{ fontSize: "clamp(3.5rem, 18vw, 7rem)", lineHeight: 0.9, letterSpacing: "-0.05em", color: "var(--text)", fontWeight: 900, marginBottom: "2vh" }}>
+                {section.title}
               </h3>
-              <p style={{ fontSize: "clamp(13px, 3.5vw, 16px)", color: "rgba(212,208,200,0.6)", fontStyle: "italic", margin: 0 }}>{p.tagline}</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "4vh" }}>
-                {[
-                  { label: "项目内容", value: p.background },
-                  { label: "负责部分", value: p.role },
-                ].map((item, idx) =>
-                  item.value ? (
-                    <div key={idx} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                      <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.15em", color: "var(--text-muted)", borderBottom: "1px solid rgba(212,208,200,0.1)", paddingBottom: 8, marginBottom: 4 }}>{item.label}</span>
-                      <p style={{ fontSize: "clamp(13px, 3.5vw, 15px)", lineHeight: 1.7, color: "rgba(212,208,200,0.7)", whiteSpace: "pre-line" }}>
-                        {renderTextWithLinks(item.value)}
-                      </p>
-                    </div>
-                  ) : null
-                )}
-              </div>
+              <p style={{ fontSize: "clamp(14px, 3.6vw, 16px)", lineHeight: 1.7, color: "var(--text-muted)", maxWidth: 520 }}>
+                {section.thesis}
+              </p>
             </div>
-            {/* Media panel */}
-            <div style={{ width: "100%", borderRadius: 12, overflow: "hidden", background: "#1a1915" }}>
-              {(p.videos || p.images || [p.thumbnail]).map((mediaSrc: string, mediaIdx: number) => (
-                <div key={mediaIdx} style={{ width: "100%", position: "relative", overflow: "hidden" }}>
-                  {mediaSrc.endsWith('.mp4') || mediaSrc.endsWith('.MP4') || mediaSrc.endsWith('.webm') ? (
-                    <LazyVideo src={mediaSrc} alt={`${p.title} video part ${mediaIdx + 1}`} />
-                  ) : (
-                    <Image
-                      src={mediaSrc}
-                      alt={`${p.title} part ${mediaIdx + 1}`}
-                      width={1200}
-                      height={800}
-                      style={{ width: "100%", height: "auto", display: "block" }}
-                      sizes="100vw"
-                      quality={95}
-                      priority={i === 0 && mediaIdx === 0}
-                    />
-                  )}
+
+            {section.groups.map((group) => (
+              <div key={group.slug} style={{ display: "flex", flexDirection: "column", gap: "4vh" }}>
+                {renderGroupText(section, group, true)}
+                <div style={{ width: "100%", borderRadius: 12, overflow: "hidden", background: "#1a1915" }}>
+                  {renderPreview(group.preview)}
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
+            ))}
+          </section>
         ))}
       </div>
     );
   }
 
-  // ── Desktop: sticky overlay layout ───────────────────────────────────────
   return (
-    <div className="flex flex-col md:grid md:grid-cols-[1fr_1.2fr] gap-y-12 gap-x-[6vw] items-start relative mt-12 w-full">
-      {/* LEFT: Sticky Active Content */}
-      <div
-        className="md:sticky md:top-[15vh] flex flex-col w-full"
-        style={{ minHeight: "80vh", zIndex: 10 }}
-      >
+    <div className="flex flex-col md:grid md:grid-cols-[1fr_1.2fr] gap-y-12 gap-x-[6vw] items-start relative mt-4 w-full">
+      <div className="md:sticky md:top-[6vh] flex flex-col w-full" style={{ minHeight: "72vh", zIndex: 10 }}>
+        <div style={{ position: "relative", width: "100%", height: "clamp(20px, 2.4vw, 34px)", marginBottom: "1.6vh" }}>
+          {sections.map((section) => (
+            <span
+              key={section.title}
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                fontSize: "clamp(1rem, 1.5vw, 1.4rem)",
+                fontWeight: 900,
+                color: "var(--text)",
+                lineHeight: 1,
+                letterSpacing: "-0.03em",
+                opacity: activeSection.title === section.title ? 1 : 0,
+                transform: activeSection.title === section.title ? "translateY(0)" : "translateY(18px)",
+                transition: "opacity 0.6s cubic-bezier(0.19, 1, 0.22, 1), transform 0.6s cubic-bezier(0.19, 1, 0.22, 1)",
+              }}
+            >
+              {section.marker}｜{section.title}
+            </span>
+          ))}
+        </div>
+
         <div style={{ position: "relative", width: "100%", height: "100%" }}>
-          {projects.map((p, i) => (
+          {items.map(({ section, group }, i) => (
             <div
-              key={p.slug}
+              key={group.slug}
               style={{
                 position: i === 0 ? "relative" : "absolute",
                 top: 0,
@@ -1169,161 +1496,18 @@ function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
                 transform: activeIndex === i ? "translateY(0)" : "translateY(24px)",
                 pointerEvents: activeIndex === i ? "auto" : "none",
                 transition: "all 0.6s cubic-bezier(0.19, 1, 0.22, 1)",
-                display: "flex",
-                flexDirection: "column",
-                gap: "3vh",
               }}
             >
-
-              <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column" }}>
-                {/* Upper block: Giant Number + Category */}
-                <div style={{ display: "flex", alignItems: "flex-start", gap: "1.5vw", marginBottom: "4vh" }}>
-                  <span
-                    style={{
-                      fontSize: "clamp(6rem, 11vw, 14rem)", // Huge editorial number
-                      fontWeight: 800,
-                      lineHeight: 0.75,
-                      color: "var(--text)",
-                      letterSpacing: "-0.05em",
-                    }}
-                  >
-                    0{i + 1}
-                  </span>
-                  <div style={{ paddingTop: "1vh", display: "flex", flexDirection: "column", gap: "1vh" }}>
-                    <span
-                      style={{
-                        padding: "6px 14px",
-                        borderRadius: "50px",
-                        border: "1px solid rgba(212,208,200,0.15)",
-                        fontSize: 10,
-                        letterSpacing: "0.15em",
-                        textTransform: "uppercase",
-                        color: "var(--text)",
-                        width: "fit-content",
-                        fontFamily: "monospace",
-                      }}
-                    >
-                      {p.category}
-                    </span>
-                    <span style={{ fontSize: 13, color: "var(--text-muted)", fontWeight: 500 }}>
-                      {"// 2026"}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Massive Title */}
-                <h3
-                  style={{
-                    fontSize: "clamp(3rem, 4.5vw, 5.5rem)",
-                    fontWeight: 900,
-                    color: "var(--text)",
-                    margin: 0,
-                    lineHeight: p.title === "otato.cn\notato.art" ? 1.15 : 0.95,
-                    letterSpacing: "-0.04em",
-                    textTransform: "uppercase",
-                    marginBottom: "3vh",
-                    whiteSpace: "pre-line",
-                  }}
-                >
-                  {p.title === "otato.cn\notato.art" ? (
-                    <>
-                      <a 
-                        href="https://otato.cn" 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        style={{ color: "inherit", textDecoration: "underline", textUnderlineOffset: 8, transition: "opacity 0.2s" }}
-                        onMouseEnter={(e) => e.currentTarget.style.opacity = "0.7"}
-                        onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
-                      >
-                        otato.cn ↗
-                      </a>
-                      {"\n"}
-                      <a 
-                        href="https://otato.art" 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        style={{ color: "inherit", textDecoration: "underline", textUnderlineOffset: 8, transition: "opacity 0.2s" }}
-                        onMouseEnter={(e) => e.currentTarget.style.opacity = "0.7"}
-                        onMouseLeave={(e) => e.currentTarget.style.opacity = "1"}
-                      >
-                        otato.art ↗
-                      </a>
-                    </>
-                  ) : (
-                    p.title
-                  )}
-                </h3>
-
-                {/* Tagline / Descriptive Hero Text */}
-                <p
-                  style={{
-                    fontSize: "clamp(16px, 1.3vw, 20px)",
-                    fontWeight: 400,
-                    lineHeight: 1.6,
-                    color: "rgba(212,208,200,0.85)",
-                    maxWidth: "85%",
-                    borderLeft: "2px solid rgba(212,208,200,0.3)",
-                    paddingLeft: "1.5rem",
-                    marginBottom: "5vh",
-                  }}
-                >
-                  {p.tagline}
-                </p>
-
-                {/* Grid for details with harsh contrast styling */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr",
-                    gap: "2.5vw",
-                    rowGap: "4vh",
-                  }}
-                >
-                  {[
-                    { label: "项目内容", value: p.background },
-                    { label: "负责部分", value: p.role },
-                  ].map((item, idx) =>
-                    item.value ? (
-                      <div key={idx} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                        <span
-                          style={{
-                            fontSize: 10,
-                            fontWeight: 700,
-                            textTransform: "uppercase",
-                            letterSpacing: "0.15em",
-                            color: "var(--text-muted)",
-                            borderBottom: "1px solid rgba(212,208,200,0.1)",
-                            paddingBottom: 8,
-                            marginBottom: 4,
-                          }}
-                        >
-                          {item.label}
-                        </span>
-                        <p
-                          style={{
-                            fontSize: "clamp(13px, 1vw, 15px)",
-                            lineHeight: 1.7,
-                            color: "rgba(212,208,200,0.7)",
-                            whiteSpace: "pre-line",
-                          }}
-                        >
-                          {renderTextWithLinks(item.value)}
-                        </p>
-                      </div>
-                    ) : null
-                  )}
-                </div>
-              </div>
+              {renderGroupText(section, group, false, i)}
             </div>
           ))}
         </div>
       </div>
 
-      {/* RIGHT: Scrolling Media */}
-      <div 
-        className="flex flex-col w-full" 
-        style={{ 
-          gap: 0, 
+      <div
+        className="flex flex-col w-full"
+        style={{
+          gap: 0,
           marginBottom: "20vh",
           background: "#1a1915",
           borderRadius: 16,
@@ -1331,49 +1515,22 @@ function SelectedWorksTimeline({ projects }: { projects: Project[] }) {
           boxShadow: "0 20px 40px rgba(0,0,0,0.5)",
         }}
       >
-        {projects.map((p, i) => (
+        {items.map(({ section, group }, i) => (
           <div
-            key={p.slug}
+            key={group.slug}
             className="project-right-media-card flex flex-col w-full"
             data-index={i}
-            style={{
-               position: "relative",
-            }}
+            style={{ position: "relative", borderBottom: i < items.length - 1 ? "1px solid rgba(212,208,200,0.1)" : "none" }}
           >
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 0,
-                width: "100%",
-              }}
-            >
-              {(p.videos || p.images || [p.thumbnail]).map((mediaSrc: string, mediaIdx: number) => (
-                <div key={mediaIdx} style={{ width: "100%", position: "relative", overflow: "hidden" }}>
-                  {mediaSrc.endsWith('.mp4') || mediaSrc.endsWith('.MP4') || mediaSrc.endsWith('.webm') ? (
-                    <LazyVideo 
-                      src={mediaSrc} 
-                      alt={`${p.title} video part ${mediaIdx + 1}`} 
-                    />
-                  ) : (
-                    <Image
-                      src={mediaSrc}
-                      alt={`${p.title} part ${mediaIdx + 1}`}
-                      width={1200} // High quality threshold
-                      height={800} // Dynamic height usually, handled by layout
-                      style={{
-                        width: "100%",
-                        height: "auto",
-                        display: "block",
-                      }}
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                      quality={95}
-                      priority={p.featured && mediaIdx === 0} // Only priority for featured project thumbnails
-                    />
-                  )}
-                </div>
-              ))}
+            <div style={{ padding: "14px 18px", borderBottom: "1px solid rgba(212,208,200,0.1)", display: "flex", justifyContent: "space-between", gap: 20, alignItems: "center", background: "rgba(10,10,10,0.75)" }}>
+              <span style={{ color: "var(--text-muted)", fontFamily: "monospace", fontSize: 10, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                {section.marker} / {section.title} / {group.marker} {group.title}
+              </span>
+              <span style={{ color: "var(--text-muted)", fontFamily: "monospace", fontSize: 9, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                {group.preview.label}
+              </span>
             </div>
+            {renderPreview(group.preview)}
           </div>
         ))}
       </div>
@@ -1475,25 +1632,36 @@ function ScrollToTop() {
         position: "fixed",
         bottom: 32,
         right: 32,
-        width: 52,
-        height: 52,
-        borderRadius: "50%",
-        border: "1px solid rgba(212,208,200,0.3)",
-        background: "rgba(10,10,10,0.8)",
-        color: "var(--text)",
+        width: 36,
+        height: 36,
+        border: "none",
+        borderRadius: 0,
+        background: "transparent",
+        color: "#fff",
+        mixBlendMode: "difference",
         fontSize: 18,
+        lineHeight: 1,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         cursor: "none",
-        backdropFilter: "blur(12px)",
         opacity: visible ? 1 : 0,
         transform: visible ? "translateY(0)" : "translateY(20px)",
         transition: "opacity 0.3s ease, transform 0.3s ease",
         zIndex: 40,
+        padding: 0,
+        userSelect: "none",
       }}
     >
-      ↑
+      <span
+        aria-hidden="true"
+        style={{
+          display: "block",
+          transform: "translateY(-1px)",
+        }}
+      >
+        ↑
+      </span>
     </button>
   );
 }
