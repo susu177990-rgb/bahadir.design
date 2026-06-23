@@ -142,6 +142,7 @@ export const portfolioSections: PortfolioSection[] = [
             { src: "/video/01-07.mp4", alt: "AI Video 案例片段 07" },
             { src: "/video/01-08.mp4", alt: "AI Video 案例片段 08" },
             { src: "/video/01-09.mp4", alt: "AI Video 案例片段 09" },
+            { src: "/video/01-10.mp4", alt: "AI Video 案例片段 10" },
           ],
         },
       },
