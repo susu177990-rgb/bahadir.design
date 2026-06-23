@@ -91,9 +91,6 @@ const picturebookImages: MediaItem[] = [
   alt: `儿童绘本案例画面 ${index + 1}`,
 }));
 
-const aiVideoBaseUrl =
-  "https://raw.githubusercontent.com/susu177990-rgb/bahadir.design/93d35345fedd809a82d93fbcfbf8c006829d972e/public/video/ai-video";
-
 export const portfolioSections: PortfolioSection[] = [
   {
     marker: "一",
@@ -136,16 +133,16 @@ export const portfolioSections: PortfolioSection[] = [
           type: "videos",
           label: "已有视频预览 / AI Video",
           items: [
-            { src: `${aiVideoBaseUrl}/01-01.mp4`, alt: "AI Video 案例片段 01" },
-            { src: `${aiVideoBaseUrl}/01-02.mp4`, alt: "AI Video 案例片段 02" },
-            { src: `${aiVideoBaseUrl}/01-03.mp4`, alt: "AI Video 案例片段 03" },
-            { src: `${aiVideoBaseUrl}/01-04.mp4`, alt: "AI Video 案例片段 04" },
-            { src: `${aiVideoBaseUrl}/01-05.mp4`, alt: "AI Video 案例片段 05" },
-            { src: `${aiVideoBaseUrl}/01-06.mp4`, alt: "AI Video 案例片段 06" },
-            { src: `${aiVideoBaseUrl}/01-07.mp4`, alt: "AI Video 案例片段 07" },
-            { src: `${aiVideoBaseUrl}/01-08.mp4`, alt: "AI Video 案例片段 08" },
-            { src: `${aiVideoBaseUrl}/01-09.mp4`, alt: "AI Video 案例片段 09" },
-            { src: `${aiVideoBaseUrl}/01-10.mp4`, alt: "AI Video 案例片段 10" },
+            { src: "/video/ai-video/01-01.mp4", alt: "AI Video 案例片段 01" },
+            { src: "/video/ai-video/01-02.mp4", alt: "AI Video 案例片段 02" },
+            { src: "/video/ai-video/01-03.mp4", alt: "AI Video 案例片段 03" },
+            { src: "/video/ai-video/01-04.mp4", alt: "AI Video 案例片段 04" },
+            { src: "/video/ai-video/01-05.mp4", alt: "AI Video 案例片段 05" },
+            { src: "/video/ai-video/01-06.mp4", alt: "AI Video 案例片段 06" },
+            { src: "/video/ai-video/01-07.mp4", alt: "AI Video 案例片段 07" },
+            { src: "/video/ai-video/01-08.mp4", alt: "AI Video 案例片段 08" },
+            { src: "/video/ai-video/01-09.mp4", alt: "AI Video 案例片段 09" },
+            { src: "/video/ai-video/01-10.mp4", alt: "AI Video 案例片段 10" },
           ],
         },
       },
