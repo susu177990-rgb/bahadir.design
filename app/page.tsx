@@ -289,9 +289,12 @@ const renderTextWithLinks = (text: string) => {
 };
 
 // ─── Lazy Video Component ───────────────────────────────────────────────────
-function LazyVideo({ src, alt }: { src: string; alt: string }) {
+function LazyVideo({ src, alt, audioSrc }: { src: string; alt: string; audioSrc?: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const audioRef = useRef<HTMLAudioElement>(null);
   const fadeRef = useRef<number | null>(null);
+  const syncRef = useRef<number | null>(null);
+  const pointerInsideRef = useRef(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -303,9 +306,29 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
+          video.muted = true;
+          video.volume = 0;
           video.play().catch(() => {});
+          const audio = audioRef.current;
+          if (audio) {
+            audio.muted = true;
+            audio.volume = 0;
+            audio.currentTime = video.currentTime;
+            audio.play().catch(() => {});
+          }
         } else {
+          pointerInsideRef.current = false;
+          if (fadeRef.current) cancelAnimationFrame(fadeRef.current);
+          if (syncRef.current) cancelAnimationFrame(syncRef.current);
+          video.volume = 0;
+          video.muted = true;
           video.pause();
+          const audio = audioRef.current;
+          if (audio) {
+            audio.pause();
+            audio.volume = 0;
+            audio.muted = true;
+          }
         }
       },
       { threshold: 0.1 }
@@ -315,52 +338,98 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
     return () => {
       observer.disconnect();
       if (fadeRef.current) cancelAnimationFrame(fadeRef.current);
+      if (syncRef.current) cancelAnimationFrame(syncRef.current);
     };
   }, []);
 
   const handleMouseEnter = () => {
     const video = videoRef.current;
+    const audio = audioRef.current;
     if (!video) return;
+    pointerInsideRef.current = true;
     if (fadeRef.current) cancelAnimationFrame(fadeRef.current);
+    if (syncRef.current) cancelAnimationFrame(syncRef.current);
+    video.play().catch(() => {});
 
-    video.muted = false;
+    if (!audio) return;
 
-    const startTime = performance.now();
-    const duration = 150;
-    const startVol = video.volume;
-
-    const fade = (now: number) => {
-      const progress = Math.min((now - startTime) / duration, 1);
-      video.volume = Math.max(0, Math.min(1, startVol + (1 - startVol) * progress));
-      if (progress < 1) {
-        fadeRef.current = requestAnimationFrame(fade);
+    audio.muted = false;
+    audio.volume = 0;
+    const syncAudioToVideo = () => {
+      if (!pointerInsideRef.current || video.paused) {
+        audio.muted = true;
+        audio.volume = 0;
+        return;
       }
+
+      const audioDuration = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : video.duration;
+      const targetTime = Number.isFinite(audioDuration) && audioDuration > 0
+        ? video.currentTime % audioDuration
+        : video.currentTime;
+
+      if (Math.abs(audio.currentTime - targetTime) > 0.25) {
+        audio.currentTime = targetTime;
+      }
+
+      syncRef.current = requestAnimationFrame(syncAudioToVideo);
     };
-    fadeRef.current = requestAnimationFrame(fade);
+
+    const startFade = () => {
+      const startTime = performance.now();
+      const duration = 180;
+      const startVol = audio.volume;
+      const fade = (now: number) => {
+        if (!pointerInsideRef.current) return;
+        const progress = Math.min((now - startTime) / duration, 1);
+        audio.volume = Math.max(0, Math.min(1, startVol + (1 - startVol) * progress));
+        if (progress < 1) {
+          fadeRef.current = requestAnimationFrame(fade);
+        }
+      };
+      fadeRef.current = requestAnimationFrame(fade);
+    };
+
+    audio.currentTime = Number.isFinite(audio.duration) && audio.duration > 0
+      ? video.currentTime % audio.duration
+      : video.currentTime;
+    audio.play().then(() => {
+      syncAudioToVideo();
+      startFade();
+    }).catch(() => {
+      audio.pause();
+      audio.volume = 0;
+    });
   };
 
   const handleMouseLeave = () => {
-    const video = videoRef.current;
-    if (!video) return;
+    pointerInsideRef.current = false;
+    const audio = audioRef.current;
+    if (!audio) return;
     if (fadeRef.current) cancelAnimationFrame(fadeRef.current);
+    if (syncRef.current) cancelAnimationFrame(syncRef.current);
 
     const startTime = performance.now();
     const duration = 250;
-    const startVol = video.volume;
+    const startVol = audio.volume;
 
     const fade = (now: number) => {
       const progress = Math.min((now - startTime) / duration, 1);
-      video.volume = Math.max(0, Math.min(1, startVol * (1 - progress)));
+      audio.volume = Math.max(0, Math.min(1, startVol * (1 - progress)));
       if (progress < 1) {
         fadeRef.current = requestAnimationFrame(fade);
       } else {
-        video.muted = true;
+        audio.volume = 0;
+        audio.muted = true;
+        if (!audio.paused) {
+          audio.play().catch(() => {});
+        }
       }
     };
     fadeRef.current = requestAnimationFrame(fade);
   };
 
   return (
+    <>
     <video
       ref={videoRef}
       src={src}
@@ -380,6 +449,8 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
       }}
       aria-label={alt}
     />
+    {audioSrc ? <audio ref={audioRef} src={audioSrc} preload="auto" muted /> : null}
+    </>
   );
 }
 
@@ -1408,7 +1479,7 @@ function SelectedWorksTimeline({ sections }: { sections: PortfolioSection[] }) {
         {preview.items.map((media, mediaIdx) => (
           <div key={`${media.src}-${mediaIdx}`} style={{ width: "100%", position: "relative", overflow: "hidden" }}>
             {preview.type === "videos" ? (
-              <LazyVideo src={media.src} alt={media.alt} />
+              <LazyVideo src={media.src} alt={media.alt} audioSrc={media.audioSrc} />
             ) : (
               <img
                 src={media.src}
