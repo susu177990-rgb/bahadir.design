@@ -367,7 +367,7 @@ function LazyVideo({ src, alt }: { src: string; alt: string }) {
       loop
       muted
       playsInline
-      preload="auto"
+      preload="metadata"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
       style={{
