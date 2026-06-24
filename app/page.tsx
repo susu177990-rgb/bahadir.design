@@ -1,9 +1,10 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Header from "@/components/Header";
 import CustomCursor from "@/components/CustomCursor";
-import { portfolioSections, type PortfolioContentBlock, type PortfolioGroup, type PortfolioPreview, type PortfolioSection } from "@/data/projects";
+import { portfolioSections, type MediaItem, type PortfolioContentBlock, type PortfolioGroup, type PortfolioPreview, type PortfolioSection } from "@/data/projects";
 
 // ─── Scroll Reveal Hook ───────────────────────────────────────────────────────
 function useReveal() {
@@ -289,168 +290,249 @@ const renderTextWithLinks = (text: string) => {
 };
 
 // ─── Lazy Video Component ───────────────────────────────────────────────────
-function LazyVideo({ src, alt, audioSrc }: { src: string; alt: string; audioSrc?: string }) {
+function LazyVideo({
+  src,
+  alt,
+  poster,
+  aspectRatio,
+  onOpen,
+}: {
+  src: string;
+  alt: string;
+  poster?: string;
+  aspectRatio?: string;
+  onOpen?: () => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const fadeRef = useRef<number | null>(null);
-  const syncRef = useRef<number | null>(null);
-  const pointerInsideRef = useRef(false);
+  const inPlaybackRangeRef = useRef(false);
+  const [shouldLoad, setShouldLoad] = useState(false);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setShouldLoad(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "120px 0px", threshold: 0 }
+    );
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    video.muted = true;
-    video.volume = 0;
+    const stopPlayback = () => {
+      video.pause();
+      video.volume = 0;
+      video.muted = true;
+    };
+
+    if (!shouldLoad) {
+      stopPlayback();
+      return;
+    }
+
+    const playPreview = () => {
+      window.dispatchEvent(new CustomEvent("bahadir:preview-video-play", { detail: src }));
+      video.muted = true;
+      video.volume = 0;
+      video.play().catch(() => {});
+    };
+
+    const handleOtherPreviewPlay = (event: Event) => {
+      if (!(event instanceof CustomEvent) || event.detail !== src) {
+        stopPlayback();
+      }
+    };
+
+    window.addEventListener("bahadir:preview-video-play", handleOtherPreviewPlay);
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          video.muted = true;
-          video.volume = 0;
-          video.play().catch(() => {});
-          const audio = audioRef.current;
-          if (audio) {
-            audio.muted = true;
-            audio.volume = 0;
-            audio.currentTime = video.currentTime;
-            audio.play().catch(() => {});
-          }
+        inPlaybackRangeRef.current = entry.isIntersecting && entry.intersectionRatio >= 0.65;
+        if (inPlaybackRangeRef.current) {
+          playPreview();
         } else {
-          pointerInsideRef.current = false;
-          if (fadeRef.current) cancelAnimationFrame(fadeRef.current);
-          if (syncRef.current) cancelAnimationFrame(syncRef.current);
-          video.volume = 0;
-          video.muted = true;
-          video.pause();
-          const audio = audioRef.current;
-          if (audio) {
-            audio.pause();
-            audio.volume = 0;
-            audio.muted = true;
-          }
+          stopPlayback();
         }
       },
-      { threshold: 0.1 }
+      { threshold: [0, 0.35, 0.65, 0.9] }
     );
 
     observer.observe(video);
     return () => {
+      window.removeEventListener("bahadir:preview-video-play", handleOtherPreviewPlay);
       observer.disconnect();
-      if (fadeRef.current) cancelAnimationFrame(fadeRef.current);
-      if (syncRef.current) cancelAnimationFrame(syncRef.current);
+      stopPlayback();
     };
-  }, []);
+  }, [shouldLoad, src]);
 
   const handleMouseEnter = () => {
     const video = videoRef.current;
-    const audio = audioRef.current;
     if (!video) return;
-    pointerInsideRef.current = true;
-    if (fadeRef.current) cancelAnimationFrame(fadeRef.current);
-    if (syncRef.current) cancelAnimationFrame(syncRef.current);
+    setShouldLoad(true);
+    window.dispatchEvent(new CustomEvent("bahadir:preview-video-play", { detail: src }));
+    video.muted = true;
+    video.volume = 0;
     video.play().catch(() => {});
-
-    if (!audio) return;
-
-    audio.muted = false;
-    audio.volume = 0;
-    const syncAudioToVideo = () => {
-      if (!pointerInsideRef.current || video.paused) {
-        audio.muted = true;
-        audio.volume = 0;
-        return;
-      }
-
-      const audioDuration = Number.isFinite(audio.duration) && audio.duration > 0 ? audio.duration : video.duration;
-      const targetTime = Number.isFinite(audioDuration) && audioDuration > 0
-        ? video.currentTime % audioDuration
-        : video.currentTime;
-
-      if (Math.abs(audio.currentTime - targetTime) > 0.25) {
-        audio.currentTime = targetTime;
-      }
-
-      syncRef.current = requestAnimationFrame(syncAudioToVideo);
-    };
-
-    const startFade = () => {
-      const startTime = performance.now();
-      const duration = 180;
-      const startVol = audio.volume;
-      const fade = (now: number) => {
-        if (!pointerInsideRef.current) return;
-        const progress = Math.min((now - startTime) / duration, 1);
-        audio.volume = Math.max(0, Math.min(1, startVol + (1 - startVol) * progress));
-        if (progress < 1) {
-          fadeRef.current = requestAnimationFrame(fade);
-        }
-      };
-      fadeRef.current = requestAnimationFrame(fade);
-    };
-
-    audio.currentTime = Number.isFinite(audio.duration) && audio.duration > 0
-      ? video.currentTime % audio.duration
-      : video.currentTime;
-    audio.play().then(() => {
-      syncAudioToVideo();
-      startFade();
-    }).catch(() => {
-      audio.pause();
-      audio.volume = 0;
-    });
   };
 
-  const handleMouseLeave = () => {
-    pointerInsideRef.current = false;
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (fadeRef.current) cancelAnimationFrame(fadeRef.current);
-    if (syncRef.current) cancelAnimationFrame(syncRef.current);
-
-    const startTime = performance.now();
-    const duration = 250;
-    const startVol = audio.volume;
-
-    const fade = (now: number) => {
-      const progress = Math.min((now - startTime) / duration, 1);
-      audio.volume = Math.max(0, Math.min(1, startVol * (1 - progress)));
-      if (progress < 1) {
-        fadeRef.current = requestAnimationFrame(fade);
-      } else {
-        audio.volume = 0;
-        audio.muted = true;
-        if (!audio.paused) {
-          audio.play().catch(() => {});
-        }
-      }
-    };
-    fadeRef.current = requestAnimationFrame(fade);
+  const handleOpen = () => {
+    onOpen?.();
   };
 
   return (
-    <>
-    <video
-      ref={videoRef}
-      src={src}
-      loop
-      muted
-      playsInline
-      preload="metadata"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
+    <div
+      ref={containerRef}
+      role="button"
+      tabIndex={0}
+      aria-label={`${alt}，打开完整视频`}
+      onClick={handleOpen}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          handleOpen();
+        }
+      }}
       style={{
         width: "100%",
-        height: "auto",
-        display: "block",
-        backgroundColor: "#111",
+        position: "relative",
         cursor: "pointer",
-        willChange: "transform",
+        aspectRatio,
+        background: poster ? `#111 url(${poster}) center / cover no-repeat` : "#111",
       }}
-      aria-label={alt}
-    />
-    {audioSrc ? <audio ref={audioRef} src={audioSrc} preload="auto" muted /> : null}
-    </>
+    >
+      <video
+        ref={videoRef}
+        src={shouldLoad ? src : undefined}
+        poster={poster}
+        loop
+        muted
+        playsInline
+        preload="none"
+        onMouseEnter={handleMouseEnter}
+        style={{
+          width: "100%",
+          height: aspectRatio ? "100%" : "auto",
+          display: "block",
+          objectFit: "cover",
+          backgroundColor: "#111",
+          cursor: "pointer",
+          willChange: "transform",
+        }}
+        aria-label={alt}
+      />
+    </div>
+  );
+}
+
+function FullVideoModal({ media, onClose }: { media: MediaItem; onClose: () => void }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const videoSrc = media.fullSrc ?? media.src;
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.play().catch(() => {});
+
+    return () => {
+      video.pause();
+    };
+  }, [videoSrc]);
+
+  useEffect(() => {
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousHtmlOverflow;
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={media.alt}
+      onClick={onClose}
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 80,
+        background: "rgba(10,10,10,0.92)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "clamp(20px, 4vw, 64px)",
+      }}
+    >
+      <button
+        type="button"
+        aria-label="关闭视频"
+        onClick={onClose}
+        style={{
+          position: "fixed",
+          top: 24,
+          right: 24,
+          background: "transparent",
+          border: "none",
+          color: "var(--text)",
+          fontSize: "clamp(24px, 3vw, 40px)",
+          lineHeight: 1,
+          cursor: "pointer",
+          zIndex: 81,
+        }}
+      >
+        ×
+      </button>
+      <div
+        onClick={(event) => event.stopPropagation()}
+        style={{
+          width: "min(100%, 1200px)",
+          maxHeight: "86vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <video
+          ref={videoRef}
+          src={videoSrc}
+          controls
+          autoPlay
+          playsInline
+          preload="metadata"
+          style={{
+            width: "100%",
+            maxHeight: "86vh",
+            objectFit: "contain",
+            background: "#000",
+          }}
+        />
+      </div>
+    </div>,
+    document.body
   );
 }
 
@@ -1075,6 +1157,7 @@ function SelectedWorksTimeline({ sections }: { sections: PortfolioSection[] }) {
   );
   const [activeIndex, setActiveIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  const [expandedMedia, setExpandedMedia] = useState<MediaItem | null>(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
@@ -1479,7 +1562,13 @@ function SelectedWorksTimeline({ sections }: { sections: PortfolioSection[] }) {
         {preview.items.map((media, mediaIdx) => (
           <div key={`${media.src}-${mediaIdx}`} style={{ width: "100%", position: "relative", overflow: "hidden" }}>
             {preview.type === "videos" ? (
-              <LazyVideo src={media.src} alt={media.alt} audioSrc={media.audioSrc} />
+              <LazyVideo
+                src={media.src}
+                alt={media.alt}
+                poster={media.poster}
+                aspectRatio={media.aspectRatio}
+                onOpen={() => setExpandedMedia(media)}
+              />
             ) : (
               <img
                 src={media.src}
@@ -1496,39 +1585,44 @@ function SelectedWorksTimeline({ sections }: { sections: PortfolioSection[] }) {
   };
 
   const activeSection = items[activeIndex]?.section ?? sections[0];
+  const modal = expandedMedia ? <FullVideoModal media={expandedMedia} onClose={() => setExpandedMedia(null)} /> : null;
 
   if (isMobile) {
     return (
-      <div style={{ display: "flex", flexDirection: "column", gap: "14vh", marginTop: "8vh", width: "100%" }}>
-        {sections.map((section) => (
-          <section key={section.title} style={{ display: "flex", flexDirection: "column", gap: "8vh" }}>
-            <div style={{ borderTop: "1px solid rgba(212,208,200,0.25)", paddingTop: "3vh" }}>
-              <p style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "monospace", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: "1.5vh" }}>
-                {section.marker} / {section.subtitle}
-              </p>
-              <h3 style={{ fontSize: "clamp(3.5rem, 18vw, 7rem)", lineHeight: 0.9, letterSpacing: "-0.05em", color: "var(--text)", fontWeight: 900, marginBottom: "2vh" }}>
-                {section.title}
-              </h3>
-              <p style={{ fontSize: "clamp(14px, 3.6vw, 16px)", lineHeight: 1.7, color: "var(--text-muted)", maxWidth: 520 }}>
-                {section.thesis}
-              </p>
-            </div>
-
-            {section.groups.map((group) => (
-              <div key={group.slug} style={{ display: "flex", flexDirection: "column", gap: "4vh" }}>
-                {renderGroupText(section, group, true)}
-                <div style={{ width: "100%", borderRadius: 12, overflow: "hidden", background: "#1a1915" }}>
-                  {renderPreview(group.preview)}
-                </div>
+      <>
+        <div style={{ display: "flex", flexDirection: "column", gap: "14vh", marginTop: "8vh", width: "100%" }}>
+          {sections.map((section) => (
+            <section key={section.title} style={{ display: "flex", flexDirection: "column", gap: "8vh" }}>
+              <div style={{ borderTop: "1px solid rgba(212,208,200,0.25)", paddingTop: "3vh" }}>
+                <p style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "monospace", letterSpacing: "0.14em", textTransform: "uppercase", marginBottom: "1.5vh" }}>
+                  {section.marker} / {section.subtitle}
+                </p>
+                <h3 style={{ fontSize: "clamp(3.5rem, 18vw, 7rem)", lineHeight: 0.9, letterSpacing: "-0.05em", color: "var(--text)", fontWeight: 900, marginBottom: "2vh" }}>
+                  {section.title}
+                </h3>
+                <p style={{ fontSize: "clamp(14px, 3.6vw, 16px)", lineHeight: 1.7, color: "var(--text-muted)", maxWidth: 520 }}>
+                  {section.thesis}
+                </p>
               </div>
-            ))}
-          </section>
-        ))}
-      </div>
+
+              {section.groups.map((group) => (
+                <div key={group.slug} style={{ display: "flex", flexDirection: "column", gap: "4vh" }}>
+                  {renderGroupText(section, group, true)}
+                  <div style={{ width: "100%", borderRadius: 12, overflow: "hidden", background: "#1a1915" }}>
+                    {renderPreview(group.preview)}
+                  </div>
+                </div>
+              ))}
+            </section>
+          ))}
+        </div>
+        {modal}
+      </>
     );
   }
 
   return (
+    <>
     <div className="flex flex-col md:grid md:grid-cols-[1fr_1.2fr] gap-y-12 gap-x-[6vw] items-start relative mt-4 w-full">
       <div className="md:sticky md:top-[6vh] flex flex-col w-full" style={{ minHeight: "72vh", zIndex: 10 }}>
         <div style={{ position: "relative", width: "100%", height: "clamp(20px, 2.4vw, 34px)", marginBottom: "1.6vh" }}>
@@ -1606,6 +1700,8 @@ function SelectedWorksTimeline({ sections }: { sections: PortfolioSection[] }) {
         ))}
       </div>
     </div>
+    {modal}
+    </>
   );
 }
 

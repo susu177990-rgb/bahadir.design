@@ -6,7 +6,9 @@ export interface ProjectLink {
 export interface MediaItem {
   src: string;
   alt: string;
-  audioSrc?: string;
+  fullSrc?: string;
+  poster?: string;
+  aspectRatio?: string;
 }
 
 export interface PlaceholderPreview {
@@ -78,13 +80,6 @@ export interface Project {
   featured?: boolean;
 }
 
-const placeholder = (label: string, needed: string, note: string): PlaceholderPreview => ({
-  type: "placeholder",
-  label,
-  needed,
-  note,
-});
-
 const picturebookImages: MediaItem[] = [
   "/image/03-01.webp",
 ].map((src, index) => ({
@@ -134,16 +129,16 @@ export const portfolioSections: PortfolioSection[] = [
           type: "videos",
           label: "已有视频预览 / AI Video",
           items: [
-            { src: "/video/ai-video/01-01.mp4", audioSrc: "/audio/ai-video/01-01.m4a", alt: "AI Video 案例片段 01" },
-            { src: "/video/ai-video/01-02.mp4", audioSrc: "/audio/ai-video/01-02.m4a", alt: "AI Video 案例片段 02" },
-            { src: "/video/ai-video/01-03.mp4", audioSrc: "/audio/ai-video/01-03.m4a", alt: "AI Video 案例片段 03" },
-            { src: "/video/ai-video/01-04.mp4", audioSrc: "/audio/ai-video/01-04.m4a", alt: "AI Video 案例片段 04" },
-            { src: "/video/ai-video/01-05.mp4", audioSrc: "/audio/ai-video/01-05.m4a", alt: "AI Video 案例片段 05" },
-            { src: "/video/ai-video/01-06.mp4", audioSrc: "/audio/ai-video/01-06.m4a", alt: "AI Video 案例片段 06" },
-            { src: "/video/ai-video/01-07.mp4", audioSrc: "/audio/ai-video/01-07.m4a", alt: "AI Video 案例片段 07" },
-            { src: "/video/ai-video/01-08.mp4", audioSrc: "/audio/ai-video/01-08.m4a", alt: "AI Video 案例片段 08" },
-            { src: "/video/ai-video/01-09.mp4", audioSrc: "/audio/ai-video/01-09.m4a", alt: "AI Video 案例片段 09" },
-            { src: "/video/ai-video/01-10.mp4", audioSrc: "/audio/ai-video/01-10.m4a", alt: "AI Video 案例片段 10" },
+            { src: "/video/ai-video/preview/01-01.mp4", fullSrc: "/video/ai-video/01-01.mp4", poster: "/image/video-posters/01-01.jpg", aspectRatio: "1280 / 548", alt: "AI Video 案例片段 01" },
+            { src: "/video/ai-video/preview/01-02.mp4", fullSrc: "/video/ai-video/01-02.mp4", poster: "/image/video-posters/01-02.jpg", aspectRatio: "16 / 9", alt: "AI Video 案例片段 02" },
+            { src: "/video/ai-video/preview/01-03.mp4", fullSrc: "/video/ai-video/01-03.mp4", poster: "/image/video-posters/01-03.jpg", aspectRatio: "16 / 9", alt: "AI Video 案例片段 03" },
+            { src: "/video/ai-video/preview/01-04.mp4", fullSrc: "/video/ai-video/01-04.mp4", poster: "/image/video-posters/01-04.jpg", aspectRatio: "16 / 9", alt: "AI Video 案例片段 04" },
+            { src: "/video/ai-video/preview/01-05.mp4", fullSrc: "/video/ai-video/01-05.mp4", poster: "/image/video-posters/01-05.jpg", aspectRatio: "16 / 9", alt: "AI Video 案例片段 05" },
+            { src: "/video/ai-video/preview/01-06.mp4", fullSrc: "/video/ai-video/01-06.mp4", poster: "/image/video-posters/01-06.jpg", aspectRatio: "16 / 9", alt: "AI Video 案例片段 06" },
+            { src: "/video/ai-video/preview/01-07.mp4", fullSrc: "/video/ai-video/01-07.mp4", poster: "/image/video-posters/01-07.jpg", aspectRatio: "8 / 9", alt: "AI Video 案例片段 07" },
+            { src: "/video/ai-video/preview/01-08.mp4", fullSrc: "/video/ai-video/01-08.mp4", poster: "/image/video-posters/01-08.jpg", aspectRatio: "8 / 9", alt: "AI Video 案例片段 08" },
+            { src: "/video/ai-video/preview/01-09.mp4", fullSrc: "/video/ai-video/01-09.mp4", poster: "/image/video-posters/01-09.jpg", aspectRatio: "9 / 16", alt: "AI Video 案例片段 09" },
+            { src: "/video/ai-video/preview/01-10.mp4", fullSrc: "/video/ai-video/01-10.mp4", poster: "/image/video-posters/01-10.jpg", aspectRatio: "9 / 16", alt: "AI Video 案例片段 10" },
           ],
         },
       },
