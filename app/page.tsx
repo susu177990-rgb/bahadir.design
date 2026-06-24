@@ -431,6 +431,30 @@ function LazyVideo({
         }}
         aria-label={alt}
       />
+      <span
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          top: 8,
+          right: 8,
+          zIndex: 2,
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          maxWidth: "calc(100% - 24px)",
+          color: "#fff",
+          mixBlendMode: "difference",
+          fontSize: "clamp(9px, 0.65vw, 10px)",
+          fontWeight: 700,
+          lineHeight: 1,
+          letterSpacing: "0.08em",
+          whiteSpace: "nowrap",
+          pointerEvents: "none",
+          textTransform: "uppercase",
+        }}
+      >
+        点击观看完整视频
+      </span>
     </div>
   );
 }
