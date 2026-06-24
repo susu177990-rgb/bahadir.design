@@ -314,12 +314,9 @@ function LazyVideo({
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
-          setShouldLoad(true);
-          observer.disconnect();
-        }
+        setShouldLoad(entry.isIntersecting);
       },
-      { rootMargin: "120px 0px", threshold: 0 }
+      { rootMargin: "240px 0px", threshold: 0 }
     );
 
     observer.observe(container);
@@ -338,6 +335,8 @@ function LazyVideo({
 
     if (!shouldLoad) {
       stopPlayback();
+      video.removeAttribute("src");
+      video.load();
       return;
     }
 
@@ -435,8 +434,8 @@ function LazyVideo({
         aria-hidden="true"
         style={{
           position: "absolute",
-          top: 8,
-          right: 8,
+          left: 8,
+          bottom: 8,
           zIndex: 2,
           display: "inline-flex",
           alignItems: "center",
