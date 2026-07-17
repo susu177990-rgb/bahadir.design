@@ -12,6 +12,8 @@
 
 # testing
 /coverage
+/tmp/pdfs/
+__pycache__/
 
 # next.js
 /.next/
