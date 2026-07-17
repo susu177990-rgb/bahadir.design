@@ -130,7 +130,7 @@ export const portfolioSections: PortfolioSection[] = [
           label: "已有视频预览 / AI Video",
           items: [
             { src: "/video/ai-video/preview/01-01.mp4", fullSrc: "/video/ai-video/01-01.mp4", poster: "/image/video-posters/01-01.jpg", aspectRatio: "1280 / 548", alt: "AI Video 案例片段 01" },
-            { src: "/video/ai-video/preview/01-02.mp4", fullSrc: "/video/ai-video/01-02.mp4", poster: "/image/video-posters/01-02.jpg", aspectRatio: "16 / 9", alt: "AI Video 案例片段 02" },
+            { src: "/video/ai-video/preview/01-02.mp4?v=20260718b", fullSrc: "/video/ai-video/01-02.mp4?v=20260718b", poster: "/image/video-posters/01-02.jpg?v=20260718b", aspectRatio: "16 / 9", alt: "AI Video 案例片段 02" },
             { src: "/video/ai-video/preview/01-03.mp4", fullSrc: "/video/ai-video/01-03.mp4", poster: "/image/video-posters/01-03.jpg", aspectRatio: "16 / 9", alt: "AI Video 案例片段 03" },
             { src: "/video/ai-video/preview/01-04.mp4", fullSrc: "/video/ai-video/01-04.mp4", poster: "/image/video-posters/01-04.jpg", aspectRatio: "16 / 9", alt: "AI Video 案例片段 04" },
             { src: "/video/ai-video/preview/01-05.mp4", fullSrc: "/video/ai-video/01-05.mp4", poster: "/image/video-posters/01-05.jpg", aspectRatio: "16 / 9", alt: "AI Video 案例片段 05" },
