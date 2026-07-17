@@ -1262,7 +1262,7 @@ function SelectedWorksTimeline({ sections }: { sections: PortfolioSection[] }) {
         <p
           style={{
             fontSize: "clamp(13px, 1vw, 15px)",
-            lineHeight: 1.7,
+            lineHeight: 1.6,
             color: "rgba(212,208,200,0.7)",
             margin: 0,
           }}
@@ -1277,7 +1277,7 @@ function SelectedWorksTimeline({ sections }: { sections: PortfolioSection[] }) {
               key={entry}
               style={{
                 fontSize: "clamp(13px, 1vw, 15px)",
-                lineHeight: 1.7,
+                lineHeight: 1.6,
                 color: "rgba(212,208,200,0.7)",
               }}
             >
@@ -1291,7 +1291,7 @@ function SelectedWorksTimeline({ sections }: { sections: PortfolioSection[] }) {
 
   const renderGroupTitle = (group: PortfolioGroup, compact = false) => {
     const titleStyle = {
-      fontSize: compact ? "clamp(2.8rem, 12vw, 5.2rem)" : "clamp(3.7rem, 5.2vw, 6.4rem)",
+      fontSize: compact ? "clamp(2.8rem, 12vw, 5.2rem)" : "clamp(3.25rem, min(5.2vw, 6.5vh), 6.4rem)",
       fontWeight: 900,
       color: "var(--text)",
       margin: 0,
@@ -1324,7 +1324,7 @@ function SelectedWorksTimeline({ sections }: { sections: PortfolioSection[] }) {
   };
 
   const renderGroupText = (section: PortfolioSection, group: PortfolioGroup, compact = false, serialIndex?: number) => (
-    <div style={{ display: "flex", flexDirection: "column", gap: compact ? "2.5vh" : "2.2vh" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: compact ? "2.5vh" : "clamp(14px, 1.8vh, 20px)" }}>
       {compact ? (
         <div style={{ display: "flex", alignItems: "flex-start", flexDirection: "column", gap: "1vh", marginBottom: "1vh" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.6vh", minWidth: 0 }}>
@@ -1371,7 +1371,7 @@ function SelectedWorksTimeline({ sections }: { sections: PortfolioSection[] }) {
         >
           <span
             style={{
-              fontSize: "clamp(5rem, 12vw, 14rem)",
+              fontSize: "clamp(4.5rem, min(12vw, 14vh), 14rem)",
               fontWeight: 900,
               lineHeight: 0.72,
               color: "var(--text)",
@@ -1394,7 +1394,7 @@ function SelectedWorksTimeline({ sections }: { sections: PortfolioSection[] }) {
         style={{
           fontSize: compact ? "clamp(14px, 3.8vw, 17px)" : "clamp(16px, 1.3vw, 20px)",
           fontWeight: 500,
-          lineHeight: 1.7,
+          lineHeight: compact ? 1.7 : 1.6,
           color: "rgba(212,208,200,0.85)",
           maxWidth: compact ? "100%" : "88%",
           borderLeft: "2px solid rgba(212,208,200,0.3)",
@@ -1407,7 +1407,7 @@ function SelectedWorksTimeline({ sections }: { sections: PortfolioSection[] }) {
 
       {renderLinkPills(group)}
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr", rowGap: compact ? "3vh" : "4vh" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", rowGap: compact ? "3vh" : "clamp(16px, 2.2vh, 26px)" }}>
         {group.contentBlocks.map((block) => (
           <Fragment key={`${group.slug}-${block.label}`}>
             {renderContentBlock(block)}
