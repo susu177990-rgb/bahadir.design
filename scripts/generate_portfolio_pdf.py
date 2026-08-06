@@ -254,12 +254,13 @@ def video_overview(c: canvas.Canvas, page: int, frames: Sequence[Path]) -> None:
 
 def video_gallery(c: canvas.Canvas, page: int, frames: Sequence[Path], start: int, end: int) -> None:
     new_page(c, page)
-    draw_label(c, f"AI VIDEO / COVER GALLERY / {start:02d}-{end:02d}", 44, H - 42)
+    selected = frames[start:end]
+    selected_indices = [int(frame.stem.split("-")[1]) for frame in selected]
+    draw_label(c, f"AI VIDEO / COVER GALLERY / {selected_indices[0]:02d}-{selected_indices[-1]:02d}", 44, H - 42)
     set_font(c, True, 34, english=True)
     c.setFillColor(TEXT)
     c.drawString(42, H - 82, "CLICK A FRAME TO PLAY")
 
-    selected = frames[start - 1 : end]
     gap = 14
     x0 = 44
     top = H - 118
@@ -274,7 +275,7 @@ def video_gallery(c: canvas.Canvas, page: int, frames: Sequence[Path], start: in
         col = local_index % cols
         x = x0 + col * (box_w + gap)
         y = top - (row + 1) * box_h - row * gap
-        video_index = start + local_index
+        video_index = int(frame.stem.split("-")[1])
         linked_image(c, frame, x, y, box_w, box_h, f"{SITE}/video/ai-video/01-{video_index:02d}.mp4", f"video-{video_index:02d}")
         c.setFillColor(DARK)
         c.rect(x + 8, y + 8, 42, 18, stroke=0, fill=1)
@@ -387,8 +388,8 @@ def build_pdf() -> Path:
     profile(c, page); c.showPage(); page += 1
     chapter(c, page, "一", "AIGC 制作案例", "AI Video / 虚拟模特 / 儿童绘本 / 提效增质"); c.showPage(); page += 1
     video_overview(c, page, frames); c.showPage(); page += 1
-    video_gallery(c, page, frames, 2, 5); c.showPage(); page += 1
-    video_gallery(c, page, frames, 6, 10); c.showPage(); page += 1
+    video_gallery(c, page, frames, 1, 5); c.showPage(); page += 1
+    video_gallery(c, page, frames, 5, 10); c.showPage(); page += 1
 
     public_image = ROOT / "public" / "image"
     case_page(
